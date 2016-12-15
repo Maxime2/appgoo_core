@@ -17,6 +17,21 @@ appGoo Core is an Apache mod that intercepts web requests and prepares a direct 
 ???
 
 ####   Configuration Options ####
+Below is an excerpt sample from httpd.conf
+
+```
+#!shell
+
+<IfModule appgoo_mod>
+    domainAddress test.purgora.net
+    serveFromFileSystem /assets/js, /assets/css, /assets/png
+    addFunctionFormat "" pg_[dir:true seperator:_]_$filename
+    addFunctionFormat .js js_[dir:true seperator:_]_$filename
+    addFunctionFormat .css css_[dir:true seperator:_]_$filename
+    addFunctionFormat "" _apache_page_request(p_request => $dir/$filename)
+    unavailableRedirectURL /errors/404.html    
+</IfModule>
+```
 
 
 * Summary of set up
