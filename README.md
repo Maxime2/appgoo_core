@@ -14,7 +14,7 @@ appGoo Core is an Apache mod that intercepts web requests and prepares a direct 
 
 ### Configuration ###
 ####   Configuration File ####
-???
+The apache httpd.conf file.
 
 ####   Configuration Options ####
 Below is an excerpt sample from httpd.conf
@@ -37,21 +37,12 @@ This is the base URL to consider for building database function calls for. All d
 ###### serveFromFileSystem ######
 Any qualifying directory (or directories) will attempt to have the file served from the file system rather than generating a database function call. Note that all sub-directories of the nominated directory are included in scope for being served from the file system.
 
+###### addFunctionFormat ######
+This converts the web request into a database function call. This consists of the file pattern to look for at the end of the web request (e.g ".js" would include /js/ajax.js) and the format to use to build the database call.
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+There are two primary methods for building the function call; i. Build a function call based on the web request value; ii. Have a constant function call and pass the web request in as a parameter. The latter results in the called function determining what function to call.
 
-### Contribution guidelines ###
+Within this configuration option, there are special values that can be referenced that are prefixed with a dollar symbol; $dir (the directory of the web request e.g. /assets/css) and $filename (this is the file being requested without the file extension e.g. "app" from /assets/css/app.css). All other values are constants. 
 
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+###### unavailableRedirectURL ######
+If a call is made to the database but there is no valid response, then serve the user the following URL.
