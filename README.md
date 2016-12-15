@@ -31,10 +31,10 @@ Below is an excerpt sample from httpd.conf
     unavailableRedirectURL /errors/404.html    
 </IfModule>
 ```
-##### domainAddress #####
+###### domainAddress ######
 This is the base URL to consider for building database function calls for. All directories apart from the exceptions listed in serveFromFileSystem will result in a database function call being generated
 
-##### serveFromFileSystem #####
+###### serveFromFileSystem ######
 Any qualifying directory (or directories) will attempt to have the file served from the file system rather than generating a database function call. Note that all sub-directories of the nominated directory are included in scope for being served from the file system.
 
 
