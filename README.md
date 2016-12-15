@@ -1,14 +1,23 @@
-# ABOUT appGoo Core #
+## About appGoo Core ##
 
 This describes the use and requirements for the core components of appGoo
 
-### What is this repository for? ###
+### What is appGoo Core ? ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+appGoo Core is an Apache mod that intercepts web requests and prepares a direct call to a PostgreSQL database. Whilst not addressed by the core, PostgreSQL will dynamically build the content required and return it to Apache to send it to the origin.
 
-### How do I get set up? ###
+### Key Attributes ###
+
+* Invisible to the end-user. There is no difference to the user interacting with a web page generated via appGoo as opposed to any other web page
+* Fast. The interpretation of the web request to a call to the database is performed extremely quickly
+* Configurable. How web requests are recognised as requiring database calls as opposed to traditional file system operations is configured per instance. The database call itself is dynamically generated and the format of this call is also configurable
+
+### Configuration ###
+####   Configuration File ####
+???
+
+####   Configuration Options ####
+
 
 * Summary of set up
 * Configuration
