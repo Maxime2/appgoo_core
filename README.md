@@ -25,13 +25,17 @@ Below is an excerpt sample from httpd.conf
 <IfModule appgoo_mod>
     domainAddress test.purgora.net
     serveFromFileSystem /assets/js, /assets/css, /assets/png
-    addFunctionFormat "" pg_[dir:true seperator:_]_$filename
     addFunctionFormat .js js_[dir:true seperator:_]_$filename
     addFunctionFormat .css css_[dir:true seperator:_]_$filename
     addFunctionFormat "" _apache_page_request(p_request => $dir/$filename)
     unavailableRedirectURL /errors/404.html    
 </IfModule>
 ```
+##### domainAddress #####
+This is the base URL to consider for building database function calls for. All directories apart from the exceptions listed in serveFromFileSystem will result in a database function call being generated
+
+##### serveFromFileSystem #####
+Any qualifying directory (or directories) will attempt to have the file served from the file system rather than generating a database function call. Note that all sub-directories of the nominated directory are included in scope for being served from the file system.
 
 
 * Summary of set up
