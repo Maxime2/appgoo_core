@@ -27,7 +27,7 @@ Below is an excerpt sample from httpd.conf
     serveFromFileSystem /assets/js, /assets/css, /assets/png
     addFunctionFormat .js js_[dir:true seperator:_]_$filename
     addFunctionFormat .css css_[dir:true seperator:_]_$filename
-    addFunctionFormat "" _apache_page_request(p_request => $dir/$filename)
+    addFunctionFormat "" _apache_page_request(p_request => "$dir/$filename")
     unavailableRedirectURL /errors/404.html    
 </IfModule>
 ```
@@ -43,6 +43,8 @@ This converts the web request into a database function call. This consists of th
 There are two primary methods for building the function call; i. Build a function call based on the web request value; ii. Have a constant function call and pass the web request in as a parameter. The latter results in the called function determining what function to call.
 
 Within this configuration option, there are special values that can be referenced that are prefixed with a dollar symbol; $dir (the directory of the web request e.g. /assets/css) and $filename (this is the file being requested without the file extension e.g. "app" from /assets/css/app.css). All other values are constants. 
+
+The function format can also optionally include the directory structure as part of the function call. Each directory would then be seperated by the seperator - including no seperator (""). An example would be /assets/css/app.css with a format of css_[dir:true seperator:_]_$filename would result in a function call of css_assets_css_app. Another example would be using a constant function - the same web request with a format of _apache_css_request(p_request => "$dir/$filename") would result in a function call of _apache_css_request(p_request => "/assets/css/app")
 
 ###### unavailableRedirectURL ######
 If a call is made to the database but there is no valid response, then serve the user the following URL.
