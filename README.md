@@ -6,6 +6,9 @@ This describes the use and requirements for the core components of appGoo
 
 appGoo Core is an Apache mod that intercepts web requests and prepares a direct call to a PostgreSQL database. Whilst not addressed by the core, PostgreSQL will dynamically build the content required and return it to Apache to send it to the origin.
 
+### Uses ###
+Any web page that would typically be served from a CMS or written in client JS, CSS & HTML5.
+
 ### Key Attributes ###
 
 * Invisible to the end-user. There is no difference to the user interacting with a web page generated via appGoo as opposed to any other web page
