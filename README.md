@@ -27,6 +27,7 @@ Below is an excerpt sample from httpd.conf
 
 <IfModule appgoo_mod>
     domainAddress test.purgora.net
+    rootPage login
     serveFromFileSystem /assets/js, /assets/css, /assets/png
     addFunctionFormat .js js_[dir:true seperator:_]_$filename
     addFunctionFormat .css css_[dir:true seperator:_]_$filename
@@ -36,6 +37,9 @@ Below is an excerpt sample from httpd.conf
 ```
 ###### domainAddress ######
 This is the base URL to consider for building database function calls for. All directories apart from the exceptions listed in serveFromFileSystem will result in a database function call being generated
+
+###### rootPage ######
+This is the default page to serve if no page is specified. For example, if the user navigated to test.purgora.net, appGoo is to serve the "login" page and use a function format to build a database function call - which may actually be served from the file system dependent upon configuration.
 
 ###### serveFromFileSystem ######
 Any qualifying directory (or directories) will attempt to have the file served from the file system rather than generating a database function call. Note that all sub-directories of the nominated directory are included in scope for being served from the file system.
