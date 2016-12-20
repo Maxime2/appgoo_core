@@ -39,20 +39,56 @@ Below is an excerpt sample from httpd.conf
         pgaspMode 99
         # put 0 for production
         pgaspEnvironment 1
+        <Location /path/to>
+            SetHandler pgasp-handler
+            rootPage login
+            functionPrefix psp_
+            serveFromFileSystem /assets/js, /assets/css, /assets/png
+            addFunctionFormat .js js_[dir:true seperator:_]_$filename
+            addFunctionFormat .css css_[dir:true seperator:_]_$filename
+            addFunctionFormat "" _apache_page_request(p_request => "$dir/$filename")
+            unavailableRedirectURL /errors/404.html
+        </Location>
+        <LocationMatch "/path/to/(add_document_page|upload_file)">
+            SetInputFilter tmpfile-filter;upload-filter
+        </LocationMatch>
     </VirtualHost>
-    <Location /path/to>
-        SetHandler pgasp-handler
-        rootPage login
-        functionPrefix psp_
-        serveFromFileSystem /assets/js, /assets/css, /assets/png
-        addFunctionFormat .js js_[dir:true seperator:_]_$filename
-        addFunctionFormat .css css_[dir:true seperator:_]_$filename
-        addFunctionFormat "" _apache_page_request(p_request => "$dir/$filename")
-        unavailableRedirectURL /errors/404.html
-    </Location>
 </IfModule>
 ```
-###### <Location> ######
+###### `<VirtualHost>` ######
+You can specify here which virtual host would be served with appGoo. You may omit VirtualHost directive, in that case appGoo will serve any virtual host. You may also have different appGoo configurations for different virtual hosts.
+
+###### pgaspEnabled ######
+This directive allows you to enable or disable appGoo functionality.
+
+###### pgaspConnectionString ######
+This directive specify standard PostgreSQL connection string to the database used with appGoo.
+
+###### pgaspPoolKey ######
+This directive sets a unique string ID for the connection pool used with virtual hosts. You may have separate or common connection pool for each virtual host. Connection pool can connect to a single database only.
+
+###### pgaspPoolMin ######
+This directive specify allowed minimum number of connection available in the pool. Zero creates new connection only when needed.
+
+###### pgaspPoolKeep ######
+This directive specify the softmax of number of concurrent connections to database for the pool. Connections will be closed to meet this maximum restriction as they finish current request processing.
+
+###### pgaspPoolMax ######
+This directive specify the absolute maximum limit on the number of concurrent connections to the database for the pool.
+
+###### pgaspUploadFiled ######
+This directive specify the name of form field holding filename to save uploading data into.
+
+###### pgaspUploadDirectory ######
+This directive specify the directory where all uploaded files are stored. This directory must be writable for the user under which Apache server is running.
+
+###### pgaspMode ######
+A non-zero value set by this directive enables output about any error occuring into the output page (assuming it is an HTML page).
+
+###### pgaspEnvironment ######
+A non-zero value set by this directive enables tracing of execution time for each pgasp function called in progress ti build response page (assuming it is an HTML page).
+
+###### `<Location>` ######
 This is standard Apache configuration directive. Use it to speicify a location base to consider for building database function calls for. All directories apart from the exceptions listed in serveFromFileSystem will result in a database function call being generated.
 You can have several Location directive as you need.
 
@@ -81,3 +117,7 @@ The function format can also optionally include the directory structure as part 
 
 ###### unavailableRedirectURL ######
 If a call is made to the database but there is no valid response, then serve the user the following URL.
+
+###### SetInputFilter tmpfile-filter;upload-filter ######
+This directive enables multi-part upload form processing for any location specified.
+
