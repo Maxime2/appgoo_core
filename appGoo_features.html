@@ -87,13 +87,64 @@
             <p>CSS can be served either raw or compiled. CSS is loaded into the database or it is served from the filesystem. appGoo Core does not address how CSS and Javascript is loaded into the database - this is addressed by other appGoo components for application development. Regardless of how it is loaded into the database, appGoo will serve it if referenced.</p><br>
             
             <h2>Configurable</h2>
-            <p></p><br>
+            <p>appGoo is a module of Apache and can be controlled through configuration of Apache. All configuration is done through Apache's configuration file of httpd.conf. All appGoo configurations are prefixed with 'ag'. The following configurations can be set for appGoo:</p>
+            <dl>
+              <dt class="small">agEnabled</dt>
+              <dd><em>default: On.</em> If not enabled (Off), then appGoo does not do any processing and control is returned to Apache to complete.</dd>
+              <dt class="small">agConnStr</dt>
+              <dd>This is the connection string to the database - it references the full path and other details but should not include the database password</dd>
+              <dt class="small">agPoolKey</dt>
+              <dd><em>default: APPGOO.</em> This key is hashed and is used by Apache to determine the connection pool to use for connecting to the database</dd>
+              <dt class="small">agPoolMin</dt>
+              <dd><em>default: 10.</em> The minimum number of connections to be maintained to the database. When Apache starts, this number of connections will be created to the database</dd>
+              <dt class="small">agPoolKeep</dt>
+              <dd><em>default: 50.</em> As the number of connections concurrently required increase from the minimum connections specified, the pool will maintain this number of connections available until this setting is met. Any connections required greater than this setting will result in a new connection being made and then terminated once completed which is a more expensive operation than utilising existing available connections. This setting should be equal to or greater than the minimum number of connections and should be equal or less than the maximum number of connections specified. PostgreSQL consumes approximately 500 bytes of memory + logfile space for each open connection maintained. The number of connections that you would wish to remain open should be your maximum number of users * the concurrency factor (what percentage of those users will be performing work at the same time) + any concurrent API requests that are expected to occur. For example, if there were 50 application users with a 60% concurrency and 2 concurrent API requests, then the 'keep' setting should be (50*0.6)+2 = 32. This would occupy approximately 32*500 bytes (16k) of server memory + logfile space</dd>
+              <dt class="small">agPoolMax</dt>
+              <dd><em>default: 90.</em> This is the maximum number of database connections to maintain as available - it has to be greater or equal to both the minimum number of connections and the keep number of connections. This should be set at 2-5 connections less than the PostgreSQL 'maxConnections' setting. The default PostgreSQL value is 100 connections, in this case the value for this setting should be 95-98. As new concurrent connections are required they will be dynamically created and destroyed when the request is complete. This setting determines the maximum number of concurrent connections that are permitted to be created by the appGoo connection pool. Any excess requests will wait until a connection slot becomes available</dd>
+              <dt class="small">agRootPage</dt>
+              <dd>This is the page to serve to the user if no page is specified - in other words, the root domain is specified like https://example.com. Typically this would be a login page or an information page</dd>
+              <dt class="small">agServeFiles</dt>
+              <dd><em>default: /assets/.</em> Any file that is found in a qualifying directory - including sub-directories, will be served from the filesystem rather than transformed into a database function call. Therefore, you could have files such as 'app.css' and 'app.js' served from the /assets directory whilst other CSS and JS files retrieved from the database</dd>
+              <dt class="small">agAddFuncFormat</dt>
+              <dd><em>default: "" appgoo_$filename.</em> Add as many formats as required for each type of file specified via web requests to transform the request into a database function to retrieve from the database. By default, only page requests will be transformed into database function calls, all other request types (e.g .js, .css, .png, .woff, etc...) would be served from the filesystem regardless of the directory specified and the setting of 'agServeFiles'. If you wish to serve another file type from the database, add an additional 'agAddFuncFormat'. appGoo will build a database function call based upon the format provided here and can include both the filename and the directory structure specified as part of the function name</dd>
+              <dt class="small">agUnavailLimit</dt>
+              <dd><em>default: 10.</em> If a timeout occurs from it either being unavailable or performing extremely poorly, then this is the number of seconds to wait before returning the 'agUnavailURL' to the user.</dd>
+              <dt class="small">agUnavailURL</dt>
+              <dd><em>default: "".</em> This is the URL to return to the user if the agUnavailLimit is breached. Typically, this should be a standalone html page in the file system. Note that this can only return a file from the filesystem, not the database</dd>
+            </dl>
+            <!--
+            pgaspEnabled On
+        pgaspUploadField p_file
+        pgaspUploadDirectory /home/ubuntu/purgora/uploaded
+        # put 0 for production
+        pgaspMode 99
+        # put 0 for production
+        pgaspEnvironment 1
+        <Location /path/to>
+            SetHandler pgasp-handler
+            rootPage login
+            functionPrefix psp_
+            serveFromFileSystem /assets/js, /assets/css, /assets/png
+            addFunctionFormat .js js_[dir:true seperator:_]_$filename
+            addFunctionFormat .css css_[dir:true seperator:_]_$filename
+            addFunctionFormat "" _apache_page_request(p_request => "$dir/$filename")
+            unavailableRedirectURL /errors/404.html
+        </Location>
+        <LocationMatch "/path/to/(add_document_page|upload_file)">
+            SetInputFilter tmpfile-filter;upload-filter
+        </LocationMatch>
+        -->
+            <br>
+            
             <h2>Plays well with others</h2>
             <p></p><br>
+            
             <h2>Simple architecture</h2>
             <p></p><br>
+            
             <h2>Fast, efficient and low cost</h2>
             <p></p><br>
+            
             <h2>Secure</h2>
             <p></p><br>
 			
