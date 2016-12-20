@@ -164,3 +164,11 @@ h6, .h6 {
 .sample-page-footer p:last-child {
   margin-bottom: 0;
 }
+
+/* 
+ * Added by SAA
+ */
+
+ dt.small{
+  margin-top: 2px;
+ }

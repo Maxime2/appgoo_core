@@ -88,7 +88,7 @@
             
             <h2>Configurable</h2>
             <p>appGoo is a module of Apache and can be controlled through configuration of Apache. All configuration is done through Apache's configuration file of httpd.conf. All appGoo configurations are prefixed with 'ag'. The following configurations can be set for appGoo:</p>
-            <dl>
+            <dl class="dl-horizontal">
               <dt class="small">agEnabled</dt>
               <dd><em>default: On.</em> If not enabled (Off), then appGoo does not do any processing and control is returned to Apache to complete.</dd>
               <dt class="small">agConnStr</dt>
@@ -110,7 +110,7 @@
               <dt class="small">agUnavailLimit</dt>
               <dd><em>default: 10.</em> If a timeout occurs from it either being unavailable or performing extremely poorly, then this is the number of seconds to wait before returning the 'agUnavailURL' to the user.</dd>
               <dt class="small">agUnavailURL</dt>
-              <dd><em>default: "".</em> This is the URL to return to the user if the agUnavailLimit is breached. Typically, this should be a standalone html page in the file system. Note that this can only return a file from the filesystem, not the database</dd>
+              <dd><em>default: "".</em> This is the URL to return to the user if the 'agUnavailLimit' is breached. Typically, this should be a standalone html page in the file system. Note that this can only return a file from the filesystem, not the database</dd>
             </dl>
             <!--
             pgaspEnabled On
@@ -137,7 +137,7 @@
             <br>
             
             <h2>Plays well with others</h2>
-            <p></p><br>
+            <p>appGoo does not assume it is the only extension or add-on enabled. It is a standards based mod for Apache to ensure that it maximises compatability. </p><br>
             
             <h2>Simple architecture</h2>
             <p></p><br>
