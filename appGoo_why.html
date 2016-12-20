@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="Why appGoo ?">
+    <meta name="author" content="appGoo">
+
+    <title>Why use appGoo ?</title>
+
+    <!-- Bootstrap core CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for sample pages -->
+    <link href="sample-page.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <div class="sample-page-masthead" style="background: #60D0E3;">
+      <div class="container">
+        <nav class="sample-page-nav">
+          <a class="sample-page-nav-item" href="appGoo_sample01.html">Sample Pages</a>
+          <a class="sample-page-nav-item" href="appGoo_features.html">Features</a>
+          <a class="sample-page-nav-item active" href="appGoo_why.html">Why appGoo ?</a>
+          <a class="sample-page-nav-item" href="/documentation/appGoo_introduction">Documentation</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="sample-page-header">
+        <h1 class="sample-page-title">Why use appGoo ?</h1>
+        <ul class="lead sample-page-description list-inline">
+        	<li>speed</li>
+        	<li>scale</li>
+        	<li>flexibility</li>
+        	<li>simplicity</li>
+        	<li>low cost infrastructure</li>
+        </ul>
+      </div>
+
+      <div class="row">
+
+        <div class="col-sm-11 sample-page-main">
+
+          <div class="sample-page-post">
+            <h2>Serving web content from the database</h2>
+			<p>Wordpress and other CMS's already use the power of the database to drive web page content. appGoo is different in the fact that it delivers the raw capability for you to scaffold on your own logic of generating content from within the database. You do not inherit all the overhead and potential bloat of a full-blown CMS, you can choose one of appGoo's application development components, or develop your own to meet your specific requirements.</p><br>
+			
+			<h2>Harnessing the speed of the database</h2>
+			<p>The PostgreSQL database does not require much tuning until the usage requirements become significant. Therefore it is easy to achieve delivery of complex web pages in milliseconds without the need for specialist tuning skills.</p>
+			<p>PostgreSQL is fast at serving data. Really fast. Users love speed. The webpage can be static - like this page - but appGoo really shines when significant data manipulation and manipulation of the page content needs to occur. As all processing occurs within the database itself, it is ACID and it is highly efficient. appGoo is primarily designed for applications as opposed to web sites - but excels at web sites too. appGoo loves data at speed, and that is what applications require. Data inserts, updates and deletes can all occur as part of a single ACID transaction that includes the generation of the resulting web page. Analytics with realtime data aggregation and presentation through modern javascript libraries like D3.js are also an ideal use of appGoo that gives users snappy pages that encourages deep and engaging use.</p><br>
+
+			<h2>Ease of scale with the database</h2>
+			<p>Engineers have put considerable thought and sophistication into the design of databases - PostgreSQL is no exception. The database that serves web content will naturally scale with the usage of your application - without you having to change anything - until the requirements and usage become significant. This allows you to concentrate on the design of your web site or application.</p>
+			<p>When massive scale is required you can utilise the standard features of PostgreSQL - replication & clustering as well as add-ons that you can deploy for sharding and other massive performance capabilities.</p><br>
+
+			<h2>Transaction integration cross different data types</h2>
+			Seperate logic for accessing data or altering data is not required - your application code is already in the database and working with data is both simple and immediately available. The power of PostgreSQL is that you can work with a mixture of relational data and NoSQL/document structure data through cursors, recordsets or JSON. PostgreSQL's SQL & JSON capabilities include high performing aggregation functions, full text search, parallel queries across multiple CPUs, Common Table Expressions (CTE's), planned queries in memory, recursive queries & the powerful window function calls.</p> 
+			<p>Refer to the <a href="https://www.postgresql.org/docs/current/static/sql-syntax.html" target="_blank">PostgreSQL documentation</a> for further details. The result is that you have a high powered data workhorse to serve the needs of your application allowing you to efficiently build, prototype & deliver powerful applications.</p><br>    
+			
+			<h2>API's too</h2>
+			<p>Its not just serving up web pages to users that appGoo can be used for. API requests can also be processed through appGoo and data either inserted, updated, deleted and/or retrieved as a result of the call. appGoo can cater for thousands of APIs all the while serving pages to users. Being an ACID compliant database, the success of the API call will be referentially enforced by the successful completion of the function call within the database. Less complexity for you to cater for in your code, and high performing APIs as a result.</p><br>
+			
+			<h2>All content in one place</h2>
+			<p>The application code and the related data all co-exist within the database - backups, replication & high availability clusters ensure that both the data and application are recoverable. Both the application version and the data will be in sync due to this co-existence, therefore the complexity of incremental code updates and corresponding data updates is simplified.</p>
+			<p>The end result is simplicity - allowing you to concentrate on designing & developing your application.</p><br>
+			
+			<h2>Simple and low cost infrastructure</h2>
+			<p>As web requests can be completed within milliseconds and concurrent scale is a core capability of the database - hundreds and thousands of requests can be served in a second. Whilst it depends upon the nature of the web site or application, it is possible to support thousands of users through an AWS T2.small (1 vCPU, 2GB RAM) at about US$0.02 per hour or less than US$15 per month. Even less for development instances which only need a T2.micro</p>
+			<p>This is low cost computing. Even larger scale applications with realtime aggregation can support tens or hundreds of users with 4 CPUs and 8GB RAM. The larger the ram, the larger the database cache that is possible to achieve even faster processing where possible.</p>
+			<p>appGoo can be deployed on the same server as the database resulting in the database being locked away from the outside world and Apache hardened to only permit genuine requests - thus resulting in an extremely simple cost effective architecture that is highly secure and easy to establish and maintain. Focus on the application design and build, not the peripheral deployment challenges of other development architectures.</p><br>  
+
+
+          </div><!-- /.sample-page-post -->
+        </div><!-- /.sample-page-main -->
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+    <footer class="sample-page-footer">
+      <p>Why appGoo ?</p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
+
+
+
