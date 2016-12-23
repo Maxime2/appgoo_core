@@ -35,10 +35,6 @@ Below is an excerpt sample from httpd.conf
         pgaspPoolMax 10
         pgaspUploadField p_file
         pgaspUploadDirectory /home/ubuntu/purgora/uploaded
-        # put 0 for production
-        pgaspMode 99
-        # put 0 for production
-        pgaspEnvironment 1
         <Location /path/to>
             SetHandler pgasp-handler
             rootPage login
@@ -81,12 +77,6 @@ This directive specify the name of form field holding filename to save uploading
 
 ###### pgaspUploadDirectory ######
 This directive specify the directory where all uploaded files are stored. This directory must be writable for the user under which Apache server is running.
-
-###### pgaspMode ######
-A non-zero value set by this directive enables output about any error occuring into the output page (assuming it is an HTML page).
-
-###### pgaspEnvironment ######
-A non-zero value set by this directive enables tracing of execution time for each pgasp function called in progress ti build response page (assuming it is an HTML page).
 
 ###### `<Location>` ######
 This is standard Apache configuration directive. Use it to speicify a location base to consider for building database function calls for. All directories apart from the exceptions listed in serveFromFileSystem will result in a database function call being generated.
