@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="description" content="appGoo Features">
+    <meta name="author" content="appGoo">
+
+    <title>appGoo Features</title>
+
+    <!-- Bootstrap core CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for sample pages -->
+    <link href="sample-page.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <div class="sample-page-masthead" style="background: #B779B8;">
+      <div class="container">
+        <nav class="sample-page-nav">
+          <a class="sample-page-nav-item" href="appGoo_sample01.html">Sample Pages</a>
+          <a class="sample-page-nav-item active" href="appGoo_features.html">Features</a>
+          <a class="sample-page-nav-item" href="appGoo_why.html">Why appGoo ?</a>
+          <a class="sample-page-nav-item" href="/documentation/appGoo_introduction">Documentation</a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="sample-page-header">
+        <h1 class="sample-page-title">appGoo Features</h1>
+        <ul class="sample-page-description list-inline">
+        	<li>Relational</li>
+        	<li>NoSQL</li>
+        	<li>BYO language</li>
+        	<li>BYO framework</li>
+        </ul>
+        <ul class="lead sample-page-description list-inline" style="margin-top: -10px;">
+        	<li>Configurable</li>
+        	<li>Naturally Fast</li>
+        	<li>Naturally Secure</li>
+        </ul>
+      </div>
+
+      <div class="row">
+
+        <div class="col-sm-11 sample-page-main">
+
+          <div class="sample-page-post">
+            <h2>Database persistence</h2>
+            <p>You choose what is stored within the PostgreSQL database. Whilst it can work in conjunction with other server technologies such as Node.js and PHP, appGoo's application code is be stored and executed within the PostgreSQL database itself.</p>
+            <p>Configuration determines where Javascript, CSS, fonts, documents and graphics are stored. They can all be in the filesystem or external to the application domain - appGoo caters for all scenrios.</p>
+            <p>You can take advantage of storing data in a relational method or the document/NoSQL structure - or mix accordingly. PostgreSQL is feature rich and appGoo is compatible with any add-on of the database - therefore the capabilities of the application code that you create are only bound by what you can create in the database. You can even interact with the operating system to perform other functions (even though this would reduce the performance and defeat the purpose of executing within the database).</p>
+            <p>The configuration and architecture of the database is independent of appGoo - therefore you can take advantage of its native features including replication and clustering. PostgreSQL can even be used as a gateway for storing data in other databases through <a href="https://www.postgresql.org/docs/current/static/postgres-fdw.html">Foreign Data Wrappers</a> (FDWs). Currently, appGoo is only available on the PostgreSQL database - but <abbr title="Foreign Data Wrappers">FDWs</abbr> open the ability to store data elsewhere.
+            <p>Note that appGoo should be completely compatible with <a href="http://www.postgis.net/"><abbr title="PostGIS is a spatial database extender for PostgreSQL object-relational database. It adds support for geographic objects allowing location queries to be run in SQL">PostGIS</abbr></a> but is not yet tested. This will occur in the future. We do not see any reason why there would be an incompatability.</p><br>
+            
+            <h2>Language independent</h2>
+            <p>This is not referring to the language of the web. It is expected that HTML5, Javascript and CSS is served to the browser. <a href="http://webassembly.org/" target="_blank"><abbr title="WebAssembly or wasm is a new portable, size- and load-time-efficient format suitable for compilation to the web">WebAssembly</abbr></a> is not a capability of appGoo. Language independence refers to the ability to code PostgreSQL database functions in multiple languages. The main language - and we use this as our base language for developing applications is <a href="https://www.postgresql.org/docs/current/static/plpgsql.html" target="_blank">PL/pgSQL</a>. It is easy to learn and very powerful with SQL and JSON and extremely fast at most operations. Other languages that can be used to build functions are:</p>
+            <ul>
+            	<li>C/C++</li>
+            	<li>Java</li>
+            	<li>Javascript/V8</li>
+            	<li>LUA</>
+            	<li>Perl</li>
+            	<li>pgOpenCL (Open Compute Language for GPU processing)
+            	<li>PHP</li>
+            	<li>Python</li>
+            	<li>R</li>
+            	<li>Ruby</li>
+            	<li>Scheme</li>
+            	<li>Shell</li>
+            	<li>TCL</li>
+            </ul>
+            <p>Each language has its own disadvantages and advantages, and an application can consist of a mix of functions that are coded in different languages. For example, text manipulation might be performed via PL/Perl functions and all other functions are PL/pgSQL. It is whatever you are comfortable with. The multiple choices lower the barriers to entry and allow you to start with a language that you are comfortable with.</p><br>
+            
+            <h2>Framework/Library independent</h2>
+            <p>This refers to Javascript frameworks and libraries. Providing the framework/library does not require a build step to generate the Javascript or other code, any framework or library can be used. appGoo does not read the Javascript, it passes it to the browser to process. What libraries and frameworks that this code references is of no concern to appGoo. For example, this page is built using Bootstrap and JQuery, there are sample pages that you can reference above that use AngularJS and React.</p>
+            <p>It is entirely possible to use just vanilla Javascript - or no Javascript at all! It is at your discretion. This ensures that a wide variety of web projects can be developed using appGoo. Note that complications arising from code builds are not a barrier to using appGoo - merely state that Javascript is served from the filesystem rather than from within the database for these scenarios.</p>
+            <p>CSS can be served either raw or compiled. CSS is loaded into the database or it is served from the filesystem. appGoo Core does not address how CSS and Javascript is loaded into the database - this is addressed by other appGoo components for application development. Regardless of how it is loaded into the database, appGoo will serve it if referenced.</p><br>
+            
+            <h2>Configurable</h2>
+            <p>appGoo is a module of Apache and can be controlled through configuration of Apache. All configuration is done through Apache's configuration file of httpd.conf. All appGoo configurations are prefixed with 'ag'. The following configurations can be set for appGoo:</p>
+            <dl class="dl-horizontal">
+              <dt class="small">agEnabled</dt>
+              <dd><em>default: On.</em> If not enabled (Off), then appGoo does not do any processing and control is returned to Apache to complete.</dd>
+              <dt class="small">agConnStr</dt>
+              <dd>This is the connection string to the database - it references the full path and other details but should not include the database password</dd>
+              <dt class="small">agPoolKey</dt>
+              <dd><em>default: APPGOO.</em> This key is hashed and is used by Apache to determine the connection pool to use for connecting to the database</dd>
+              <dt class="small">agPoolMin</dt>
+              <dd><em>default: 10.</em> The minimum number of connections to be maintained to the database. When Apache starts, this number of connections will be created to the database</dd>
+              <dt class="small">agPoolKeep</dt>
+              <dd><em>default: 50.</em> As the number of connections concurrently required increase from the minimum connections specified, the pool will maintain this number of connections available until this setting is met. Any connections required greater than this setting will result in a new connection being made and then terminated once completed which is a more expensive operation than utilising existing available connections. This setting should be equal to or greater than the minimum number of connections and should be equal or less than the maximum number of connections specified. PostgreSQL consumes approximately 500 bytes of memory + logfile space for each open connection maintained. The number of connections that you would wish to remain open should be your maximum number of users * the concurrency factor (what percentage of those users will be performing work at the same time) + any concurrent API requests that are expected to occur. For example, if there were 50 application users with a 60% concurrency and 2 concurrent API requests, then the 'keep' setting should be (50*0.6)+2 = 32. This would occupy approximately 32*500 bytes (16k) of server memory + logfile space</dd>
+              <dt class="small">agPoolMax</dt>
+              <dd><em>default: 90.</em> This is the maximum number of database connections to maintain as available - it has to be greater or equal to both the minimum number of connections and the keep number of connections. This should be set at 2-5 connections less than the PostgreSQL 'maxConnections' setting. The default PostgreSQL value is 100 connections, in this case the value for this setting should be 95-98. As new concurrent connections are required they will be dynamically created and destroyed when the request is complete. This setting determines the maximum number of concurrent connections that are permitted to be created by the appGoo connection pool. Any excess requests will wait until a connection slot becomes available</dd>
+              <dt class="small">agRootPage</dt>
+              <dd>This is the page to serve to the user if no page is specified - in other words, the root domain is specified like https://example.com. Typically this would be a login page or an information page</dd>
+              <dt class="small">agServeFiles</dt>
+              <dd><em>default: /assets/.</em> Any file that is found in a qualifying directory - including sub-directories, will be served from the filesystem rather than transformed into a database function call. Therefore, you could have files such as 'app.css' and 'app.js' served from the /assets directory whilst other CSS and JS files retrieved from the database</dd>
+              <dt class="small">agAddFuncFormat</dt>
+              <dd><em>default: "" appgoo_$filename.</em> Add as many formats as required for each type of file specified via web requests to transform the request into a database function to retrieve from the database. By default, only page requests will be transformed into database function calls, all other request types (e.g .js, .css, .png, .woff, etc...) would be served from the filesystem regardless of the directory specified and the setting of 'agServeFiles'. If you wish to serve another file type from the database, add an additional 'agAddFuncFormat'. appGoo will build a database function call based upon the format provided here and can include both the filename and the directory structure specified as part of the function name</dd>
+              <dt class="small">agUnavailLimit</dt>
+              <dd><em>default: 10.</em> If a timeout occurs from it either being unavailable or performing extremely poorly, then this is the number of seconds to wait before returning the 'agUnavailURL' to the user.</dd>
+              <dt class="small">agUnavailURL</dt>
+              <dd><em>default: "".</em> This is the URL to return to the user if the 'agUnavailLimit' is breached. Typically, this should be a standalone html page in the file system. Note that this can only return a file from the filesystem, not the database</dd>
+            </dl>
+            <!--
+            pgaspEnabled On
+        pgaspUploadField p_file
+        pgaspUploadDirectory /home/ubuntu/purgora/uploaded
+        # put 0 for production
+        pgaspMode 99
+        # put 0 for production
+        pgaspEnvironment 1
+        <Location /path/to>
+            SetHandler pgasp-handler
+            rootPage login
+            functionPrefix psp_
+            serveFromFileSystem /assets/js, /assets/css, /assets/png
+            addFunctionFormat .js js_[dir:true seperator:_]_$filename
+            addFunctionFormat .css css_[dir:true seperator:_]_$filename
+            addFunctionFormat "" _apache_page_request(p_request => "$dir/$filename")
+            unavailableRedirectURL /errors/404.html
+        </Location>
+        <LocationMatch "/path/to/(add_document_page|upload_file)">
+            SetInputFilter tmpfile-filter;upload-filter
+        </LocationMatch>
+        -->
+            <br>
+            
+            <h2>Plays well with others</h2>
+            <p>appGoo does not assume it is the only extension or add-on enabled. It is a standards based mod for Apache to ensure that it maximises compatability. </p><br>
+            
+            <h2>Simple architecture</h2>
+            <p></p><br>
+            
+            <h2>Fast, efficient and low cost</h2>
+            <p></p><br>
+            
+            <h2>Secure</h2>
+            <p></p><br>
+			
+
+          </div><!-- /.sample-page-post -->
+        </div><!-- /.sample-page-main -->
+
+      </div><!-- /.row -->
+
+    </div><!-- /.container -->
+
+    <footer class="sample-page-footer">
+      <p>appGoo Features</p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
+
+
+
