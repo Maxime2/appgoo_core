@@ -1,44 +1,16 @@
 /*
  * mod_ag.c
  *
- * Based on:
- * mod_pgasp.c - Apache module for PGASP (Adaptive Server Pages for Postgres)
- * Authors: "Alex Nedoboi" <my seven-letter surname at gmail>
- *          "Maxim Zakharov" <maxim@jeslalabs.com>
- *
- * See pgasp.org for documentation
- *
- * Compilation: apxs -i -a -c -I /usr/include/postgresql -l pq mod_pgasp.c
- *
- * To register and enable in /etc/apache2/apache2.conf:
- *
- *    AddHandler pgasp-handler .pgasp
- *    pgaspEnabled On
- *    pgaspConnectionString "host=... dbname=... user=... password=..."
- *
- * 2014-12-30 Started
- * 2015-01-02 Module is working, now onto Postgres connection
- * 2015-01-05 Postgres connection done
- * 2015-01-06 Added allowed requests, reading from .conf
- * 2015-01-07 Added clean_up_connection()
- * 2015-01-08 Added spit_pg_error()
- * 2015-01-09 Reading connection string from .conf now
- * 2015-01-17 Now passing GET to PL/pgSQL function as text parameter
- *
- * TODO: Pass POST to the PL/pgSQL function
- * TODO: Write helper PL/pgSQL functions to parse POST
- * TODO: Think of pgaspAllowedPage and pgaspAllowedFunction in .conf (instead of just pgaspAllowed)
- *
- */
-/* PostgreSQL pool by Maxim Zakharov, Jeslalabs Pty Limited
+*/
+/* PostgreSQL pool
    Originally based on mod_dbi_pool.c by Paul Querna, 
    http://www.outoforder.cc/projects/apache/mod_dbi_pool/
  */
-/* Upload filter by Maxim Zakharov, Jeslalabs Pty Limited
+/* Upload filter
    Originally based on mod_upload by Nick Kew,
    http://apache.webthing.com/mod_upload/
 */
-/* Authentication by Maxim Zakharov, Jeslalabs Pty Limited
+/* Authentication 
    Originally based on mod_auth_form
 */
 
