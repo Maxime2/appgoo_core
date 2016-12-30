@@ -1,52 +1,6 @@
 /* appGoo Compiler
  *
- * Based on:
- * PGASP (Adaptive Server Pages for Postgres) Compiler
- * Authors: "Alex Nedoboi" <my seven-letter surname at gmail>
- *          "Jesla Labs" <legal at jeslalabs dot com>
- *
- * Input: .pgasp file format, see pgasp.org for specifications and examples
- *
- * Output: 1. Creates PL/pgSQL function source to standard output, ready to pipe to psql
- *         2. Creates .php wrapper file (optional) - TODO
- *         3. Creates .psp (mod_python Python Server Pager) wrapper file
- *
- * Compilation: gcc -o pgaspc pgaspc.c
- *
- * Usage: pgaspc input_file_name.pgasp | psql -h host -d database -U user
- *
- * 2014-12-30 Started
- * 2015-01-03 Added classic style print tag <%= %> along with new style <= =>
- * 2015-01-04 Added checks for consecutive tags
- * 2015-01-09 .pgasp format now allows a comments section in the beginning of the file
- * 2015-01-14 Added in_declare, in_header
- * 2015-01-14 Printing extra single quote if not in code/equals/declare
- * 2015-01-17 Now getting _pgasp_get_ from Apache mod_pgasp
- * 2015-01-18 Added in_params
- * 2015-02-21 Python wrapper generation done, as file_name + .psp
- * 2015-02-21 Reading Postgres connection string for mod_python wrapper from pg-credentials.txt
- * 2015-02-27 Moved out-of-bounds comparisons to outside the loop to cover no-new-line code
- * 2015-03-02 Split in_sql_comment and in_html_comment
- * 2015-03-02 Added processing of date parameters
- * 2015-03-03 Added testing after compilation
- * 2015-03-03 Added comments removal
- * 2015-03-09 Added #log for console logs
- * 2015-03-09 Added environments (dev, test, prod) and console logs removal when compiled to test/prod
- * 2015-03-25 Now testing for in_code to ignore <= => and <%= %> tags if in a string
- * 2015-03-26 Added CU variable for current user ID
- * 2016-05-16 remove new style print tag <= => as it conflicts with arrow function syntax in javascript
- *
- * TODO: PHP wrapper generation
- * TODO: different variables declaration section (for parsing GET/POST) when generated for use with mod_pgasp
- * TODO: Error handling
- *
- * TOTHINK: Return a record instead of just text, i.e. (mime, body) or maybe (headers, body)
- *          ("text/html", "<!DOCTYPE html><html> ... </html>")
- *          ("application/json", "{ ... }")
- *          ("image/svg+xml", "<svg version='1.1'> ... </svg>")
- * TOTHINK: Do we really need in_declare in_header in_params? Perhaps can be simplified?
- *
- */
+*/
 
 #define _GNU_SOURCE
 
