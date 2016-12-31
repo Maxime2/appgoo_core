@@ -1,6 +1,6 @@
 ## About appGoo Core ##
 
-This describes the use and requirements for the core components of appGoo
+This describes the use and requirements for the core components of appGoo. It is licensed using Apache 2.0 License and is documented within license.txt of this repository
 
 ### What is appGoo Core ? ###
 
