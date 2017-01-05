@@ -68,9 +68,8 @@ void expand_psp_calls(char *line) {
 int main(int argc, char * argv[])
 {
   int rc;
-  //fprintf(stderr, "PGASP Compiler beta");
 
-  if (argc == 1) { fprintf(stderr, "Usage: pgaspc input_file.pgasp [-d|-t|-p]\n\n"); exit(EXIT_FAILURE); }
+  if (argc == 1) { fprintf(stderr, "Usage: agc input_file.ag [-d|-t|-p]\n\n"); exit(EXIT_FAILURE); }
 
   if (argc == 3 && ( argv[2][1] == 't' || argv[2][1] == 'p') ) { environment = argv[2][1]; }
 
@@ -175,7 +174,7 @@ int main(int argc, char * argv[])
 	continue;
       }
       
-      /* comments section in the beginning of .pgasp file, only works until first non-comment line */
+      /* comments section in the beginning of .ag file, only works until first non-comment line */
       if (line_trimmed[0] == '#' && is_first_line) line_trimmed[0] = 0;
 
       if (line_trimmed[0] == 0 || (line_trimmed[0] == '/' && line_trimmed[1] == '/')) continue;
@@ -223,7 +222,6 @@ int main(int argc, char * argv[])
 	  if ( (line_trimmed[0] == '!' || line_trimmed[0] == '?') && line_trimmed[1] == '>')
 	    {
 	      in_declare = false;
-	      //printf("begin\n_pgasp_ := \'");
 	      printf("begin\n");
 	      if (environment == 'p') printf("_e_ := 0;\n");
 	      printf("if _e_ > 0 then _p_[_n_] := '<!-- start: %s -->'; _n_ := _n_ + 1; end if;\n", function_name);
@@ -248,11 +246,11 @@ int main(int argc, char * argv[])
 
 	      /* Input  : parameter type default
 		 Parsed : parameter [j] type [i] default
-		 Output : parameter type := pgasp_parse_get[_type] (_pgasp_GET_, 'parameter', 'default'); */
+		 Output : parameter type := ag_parse_get[_type] (_ag_GET_, 'parameter', 'default'); */
 
 	      not_null = strcasecmp(line_trimmed+i, "null");
 
-	      printf("%.*s:= pgasp_parse_get%s%s%s(_pgasp_GET_, \'%.*s\', %s%s%s);\n",
+	      printf("%.*s:= ag_parse_get%s%s%s(_ag_GET_, \'%.*s\', %s%s%s);\n",
 		     i, line_trimmed,
 		     ( strstr(line_trimmed, " date ") ) ? "_date" : "",
 		     ( strstr(line_trimmed, " json ") ) ? "_json" : "",
@@ -316,7 +314,6 @@ int main(int argc, char * argv[])
 		      if (in_code)
 			{
 			  in_code = false;
-			  //printf("_pgasp_ := _pgasp_ || \'");
 			  printf("_p_[_n_] := \'");
 			  i += 2;
 			  tag_processed = true;

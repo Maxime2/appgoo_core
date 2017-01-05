@@ -1019,9 +1019,9 @@ static int ag_handler (request_rec * r)
      }
    }
 
-   /* removing extention (.ag or other) from file name, and adding "psp_" for function name, i.e. foo.ag becomes psp_foo() */
+   /* removing extention (.ag or other) from file name, and adding "ag_" for function name, i.e. foo.ag becomes ag_foo() */
    cursor_string = apr_psprintf(r -> pool,
-				"select * from psp_%s($1::varchar, (select id from users where username=$2), ARRAY[",
+				"select * from ag_%s($1::varchar, (select id from users where username=$2), ARRAY[",
 				basename);
    
    for (i = 1; i < pathelts->nelts; i++) {

@@ -5,10 +5,10 @@ for i in 1 .. _n_ loop
 end loop;
 */
 
-_pgasp_ := array_to_string(_p_, '', '');
+_ag_ := array_to_string(_p_, '', '');
 
 
-return _pgasp_;
+return _ag_;
 
 
 
@@ -28,7 +28,7 @@ exception when others then
         perform db_error_register(
             v_error_source,
             'psp_page',
-            v_error_pgasp_get,
+            v_error_ag_get,
             v_error_severity,
             v_error_CU,
             v_error_sqlstate,
