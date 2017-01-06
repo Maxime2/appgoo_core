@@ -63,7 +63,6 @@ apr_status_t apr_filepath_list_split_impl(apr_array_header_t **pathelts,
 
 #define spit_pg_error(st) { ap_rprintf(r,"<!-- "); ap_rprintf(r,"Cannot %s: %s\n",st,PQerrorMessage(pgc)); ap_rprintf(r," -->\n"); }
 #define spit_pg_error_syslog(st) ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "Cannot %s: %s\n", st,PQerrorMessage(pgc));
-#define MAX_ALLOWED_PAGES 100
 
 #define true 1
 #define false 0
@@ -84,11 +83,11 @@ apr_status_t apr_filepath_list_split_impl(apr_array_header_t **pathelts,
     ag_pool_close(s, pgc),			\
     OK;
 
-#define FORM_LOGIN_HANDLER "purgora-login-handler"
-#define FORM_LOGOUT_HANDLER "purgora-logout-handler"
-#define FORM_REDIRECT_HANDLER "purgora-redirect-handler"
+#define FORM_LOGIN_HANDLER "appgoo-login-handler"
+#define FORM_LOGOUT_HANDLER "appgoo-logout-handler"
+#define FORM_REDIRECT_HANDLER "appgoo-redirect-handler"
 #define MOD_AUTH_FORM_HASH "site"
-#define AUTHN_PURGORA_PROVIDER "purgora"
+#define AUTHN_APPGOO_PROVIDER "appgoo"
 
 PGconn* ag_pool_open(server_rec* s);
 void ag_pool_close(server_rec* s, PGconn* sql);
@@ -96,7 +95,6 @@ void ag_pool_close(server_rec* s, PGconn* sql);
 extern module AP_MODULE_DECLARE_DATA ag_module ;
 
 typedef struct ag_config {
-  const char * allowed[MAX_ALLOWED_PAGES];
   const char * connection_string;
   int connection_string_set;
   const char * key;
@@ -110,9 +108,6 @@ typedef struct ag_config {
   int nmax, nmax_set ;
   int exptime, exptime_set ;
   int is_enabled, is_enabled_set;
-  int allowed_count, allowed_count_set;
-  int environment, environment_set;
-  int mode, mode_set;
 } ag_cfg;
 
 typedef struct {
@@ -177,7 +172,7 @@ typedef struct {
 } params_t;
 
 
-typedef enum { cmd_setkey, cmd_connection, cmd_allowed, cmd_enabled,
+typedef enum { cmd_setkey, cmd_connection, cmd_enabled,
 	       cmd_min, cmd_keep, cmd_max, cmd_exp } cmd_parts ;
 
 static apr_hash_t *ag_pool_config;
@@ -225,12 +220,9 @@ static void* create_ag_config(apr_pool_t* p, server_rec* s) {
   ag_cfg* config = (ag_cfg*) apr_pcalloc(p, sizeof(ag_cfg)) ;
   config->is_enabled = true;
   config->connection_string = NULL;
-  config->allowed_count = 0;
   config->nmax = 1;
   config->exptime = 3600000;
   config->pool = p;
-  config->environment = 1;
-  config->mode = 99;
   return config ;
 }
 
@@ -258,11 +250,6 @@ static void *merge_ag_config(apr_pool_t * p, void *basev, void *addv) {
     new->exptime_set = add->exptime_set || base->exptime_set;
     new->is_enabled = (add->is_enabled_set == 0) ? base->is_enabled : add->is_enabled;
     new->is_enabled_set = add->is_enabled_set || base->is_enabled_set;
-    new->environment = (add->environment_set == 0) ? base->environment : add->environment;
-    new->environment_set = add->environment_set || base->environment_set;
-    new->mode = (add->mode_set == 0) ? base->mode : add->mode;
-    new->mode_set = add->mode_set || base->mode_set;
-    
 
     return new;
 }
@@ -546,10 +533,6 @@ static const char* set_param(cmd_parms* cmd, void* cfg,
   case cmd_connection: ag->connection_string = val ;
     ag->connection_string_set = 1;
     break ;
-  case cmd_allowed:
-    if (ag->allowed_count < MAX_ALLOWED_PAGES)
-      ag->allowed[ag->allowed_count++] = val;
-    break;
   case cmd_min: ISINT(val) ; ag->nmin = atoi(val) ;
     ag->nmin_set = 1;
     break ;
@@ -767,7 +750,7 @@ static int ag_handler (request_rec * r)
    char * requested_file;
    PGconn * pgc;
    PGresult * pgr;
-   int i, j, allowed_to_serve, filename_length = 0;
+   int i, j, filename_length = 0;
    int field_count, tuple_count;
    int end = 0;
    const char * request_args = NULL;
@@ -911,28 +894,6 @@ static int ag_handler (request_rec * r)
    if (i >= 0) {
      requested_file += i; /* now pointing to foo.ag instead of /var/www/.../foo.ag */
      if (filename_length > i) filename_length -= i;
-   }
-
-   allowed_to_serve = false;
-
-   for (i = 0; i < config->allowed_count; i++)
-   {
-      if (!strcmp(config->allowed[i], requested_file))
-      {
-         allowed_to_serve = true;
-         break;
-      }
-   }
-   if (config->allowed_count == 0) allowed_to_serve = true;
-
-   if (!allowed_to_serve)
-   {
-      ap_set_content_type(r, "text/plain");
-      ap_rprintf(r, "Hello there\nThis is AG\nEnabled: %s\n", config->is_enabled ? "On" : "Off");
-      ap_rprintf(r, "Requested: %s\n", requested_file);
-      ap_rprintf(r, "Allowed: %s\n", allowed_to_serve ? "Yes" : "No");
-
-      return OK; /* pretending we have served the file, may return HTTP_FORDIDDEN in the future */
    }
 
    if (filename_length == 0) {
@@ -1470,7 +1431,7 @@ static int syslog_init(apr_pool_t* p, apr_pool_t* plog,
 
   void *data = NULL;
   char *key;
-  const char *userdata_key = "jl-syslog_post_config";
+  const char *userdata_key = "ag-syslog_post_config";
 
   // This code is used to prevent double initialization of the module during Apache startup
   apr_pool_userdata_get(&data, userdata_key, s->process->pool);
@@ -1479,7 +1440,7 @@ static int syslog_init(apr_pool_t* p, apr_pool_t* plog,
     return OK;
   }
 
-  openlog("purgora", 0, LOG_USER);
+  openlog("appgoo", 0, LOG_USER);
   return OK;
 }
 
@@ -1498,7 +1459,7 @@ static int syslog_handler (request_rec *r) {
    const char * log_text = NULL;
    const char *priority = r->path_info;
    apr_off_t log_size;
-   if (!r -> handler || strcmp (r -> handler, "jl-syslog") ) return DECLINED;
+   if (!r -> handler || strcmp (r -> handler, "ag-syslog") ) return DECLINED;
    if (!r -> method || (strcmp (r -> method, "GET") && strcmp (r -> method, "POST")) ) return DECLINED;
    if (NULL == r->user) return DECLINED;
 
@@ -1533,7 +1494,7 @@ static void note_cookie_auth_failure(request_rec * r) {
 
 static int hook_note_cookie_auth_failure(request_rec * r,
                                          const char *auth_type) {
-    if (strcasecmp(auth_type, "purgora"))
+    if (strcasecmp(auth_type, "appgoo"))
         return DECLINED;
 
     note_cookie_auth_failure(r);
@@ -1883,7 +1844,7 @@ static int check_authn(request_rec * r, const char *sent_user, const char *sent_
   if (!sent_user || !sent_pw) {
     auth_result = AUTH_USER_NOT_FOUND;
   } else {
-    apr_table_setn(r->notes, AUTHN_PROVIDER_NAME_NOTE, AUTHN_PURGORA_PROVIDER);
+    apr_table_setn(r->notes, AUTHN_PROVIDER_NAME_NOTE, AUTHN_APPGOO_PROVIDER);
     //      auth_result = provider->check_password(r, sent_user, sent_pw);
     pgc = ag_pool_open(r->server);
     switch ((pgc != NULL) ? true : false) {
@@ -2112,7 +2073,7 @@ static int authenticate_form_authn(request_rec * r)
 
     /* Are we configured to be Form auth? */
     current_auth = ap_auth_type(r);
-    if (!current_auth || strcasecmp(current_auth, "purgora")) {
+    if (!current_auth || strcasecmp(current_auth, "appgoo")) {
         return DECLINED;
     }
 
@@ -2638,7 +2599,7 @@ static int authenticate_form_post_config(apr_pool_t *pconf, apr_pool_t *plog,
     ap_session_set_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_set);
     if (!ap_session_load_fn || !ap_session_get_fn || !ap_session_set_fn) {
       ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02617)
-		   "You must load mod_session to enable Purgora authorisation "
+		   "You must load mod_session to enable appGoo authorisation "
                                        "functions");
       return !OK;
     }
@@ -2649,7 +2610,7 @@ static int authenticate_form_post_config(apr_pool_t *pconf, apr_pool_t *plog,
     ap_request_remove_filter_fn = APR_RETRIEVE_OPTIONAL_FN(ap_request_remove_filter);
     if (!ap_request_insert_filter_fn || !ap_request_remove_filter_fn) {
       ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02618)
-		   "You must load mod_request to enable Purgora "
+		   "You must load mod_request to enable appGoo "
 		   "functions");
       return !OK;
     }
@@ -2663,7 +2624,6 @@ static const command_rec ag_directives[] = {
   AP_INIT_TAKE1("agEnabled",          set_param, (void*)cmd_enabled,    RSRC_CONF, "Enable or disable mod_ag"),
   AP_INIT_TAKE1("agPoolKey",          set_param, (void*)cmd_setkey,     RSRC_CONF, "Unique Pool ID string"),
   AP_INIT_TAKE1("agConnectionString", set_param, (void*)cmd_connection, RSRC_CONF, "Postgres connection string"),
-  AP_INIT_TAKE1("agAllowed",          set_param, (void*)cmd_allowed,    RSRC_CONF, "Web pages allowed to be served"),
   AP_INIT_TAKE1("agPoolMin",          set_param, (void*)cmd_min,        RSRC_CONF, "Minimum number of connections"),
   AP_INIT_TAKE1("agPoolKeep",         set_param, (void*)cmd_keep,       RSRC_CONF, "Maximum number of sustained connections"),
   AP_INIT_TAKE1("agPoolMax",          set_param, (void*)cmd_max,        RSRC_CONF, "Maximum number of connections"),
