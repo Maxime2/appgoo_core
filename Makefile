@@ -8,6 +8,9 @@ XXD=xxd
 CREDF=pg-credentials.txt
 CREDS=$(shell cat $(CREDF))
 WD=$(shell pwd)
+SRCS=$(shell find . -type f -name "*.ag" ! -name "*.include*" ! -path "*deleted*")
+APPGOOS=$(patsubst %.ag,%.pgsql,$(SRCS))
+INCDIRS=$(shell find . -type d ! -regex ".*/\..*" ! -path "*/apache2*" ! -path "*/uploaded*" ! -path "*/sql*" ! -path "*/assets*" ! -path "*/src*" )
 
 PGFLAGS=-q -w "$(CREDS)"
 APXS_CFLAGS=-I$(shell $(PGCONFIG) --includedir 2>/dev/null)
@@ -19,7 +22,7 @@ VERSION:=1.0
 
 .PHONY: functions install install-local-appgoo-net
 
-all: agc mod_ag.la
+all: agc mod_ag.la appgoo
 
 install: functions mod_ag.la mod_session_ag.la apache2/ag-host.inc apache2/ag-location.inc apache2/ag-sessions.inc
 	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-host.inc
@@ -57,3 +60,16 @@ src/template_pgsql_function_end_sql.h: src/template_pgsql_function_end.sql
 
 functions: agc $(CREDF) sql/ag_parse_get.include.sql
 	@psql $(PGFLAGS) -f sql/ag_parse_get.include.sql
+
+appgoo: $(CREDF) functions make.dep $(APPGOOS)
+
+%.pgsql: %.ag $(DEPS) agc
+	@($(AGC) $< > $@ && psql $(PGFLAGS) -f $@ > /dev/null) || rm -f $@
+
+make.files: $(SRCS) src/mkfiles.pl
+	@perl src/mkfiles.pl
+
+make.dep: make.files src/mkdep.pl
+	@perl src/mkdep.pl $(INCDIRS)
+
+Makefile: make.dep
