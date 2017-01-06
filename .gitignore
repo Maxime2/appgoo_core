@@ -5,3 +5,6 @@ agc
 mod_ag.la
 *~
 .libs
+.lo
+.slo
+*_sql.h
