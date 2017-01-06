@@ -25,7 +25,7 @@ Below is an excerpt sample from httpd.conf
 ```
 #!shell
 
-<IfModule appgoo_mod>
+<IfModule ag_module>
     <VirtualHost *:80>
         agEnabled On
         agConnStr "host=/var/run/postgresql dbname=example user=appgoo password="
