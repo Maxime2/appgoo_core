@@ -26,19 +26,19 @@ SetInputFilter KEPT_BODY
 </LocationMatch>
 
 <LocationMatch "^/json/.*">
-        pgaspContentType application/json
+        agContentType application/json
         Include sites-available/ag-location.inc
         Include sites-available/ag-sessions.inc
 </LocationMatch>
 
 <LocationMatch "^/js/.*">
-        pgaspContentType application/javascript
+        agContentType application/javascript
         Include sites-available/ag-location.inc
         Include sites-available/ag-sessions.inc
 </LocationMatch>
 
 <LocationMatch "^/css/.*">
-        pgaspContentType text/css
+        agContentType text/css
         Include sites-available/ag-location.inc
         Include sites-available/ag-sessions.inc
 </LocationMatch>
