@@ -26,6 +26,7 @@ VERSION:=1.0
 all: agc mod_ag.la appgoo
 
 install: functions mod_ag.la mod_session_ag.la apache2/ag-host.inc apache2/ag-location.inc apache2/ag-sessions.inc
+	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-pool.inc
 	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-host.inc
 	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-location.inc
 	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-sessions.inc
