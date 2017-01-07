@@ -4,6 +4,7 @@ SHELL=/bin/bash
 APXS=apxs
 PGCONFIG:=$(shell find / -name pg_config -print -quit 2>/dev/null )
 XXD=xxd
+AGC=./agc
 
 CREDF=pg-credentials.txt
 CREDS=$(shell cat $(CREDF))
@@ -63,7 +64,7 @@ functions: agc $(CREDF) sql/ag_parse_get.include.sql
 
 appgoo: $(CREDF) functions make.dep $(APPGOOS)
 
-%.pgsql: %.ag $(DEPS) agc
+%.pgsql: %.ag $(DEPS) $(AGC)
 	@($(AGC) $< > $@ && psql $(PGFLAGS) -f $@ > /dev/null) || rm -f $@
 
 make.files: $(SRCS) src/mkfiles.pl
