@@ -1,3 +1,10 @@
 /jquery.min.js
 /bootstrap.min.css
 /bootstrap.min.js
+agc
+mod_ag.la
+*~
+.libs
+*.lo
+*.slo
+*_sql.h
