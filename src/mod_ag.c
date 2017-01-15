@@ -1855,7 +1855,8 @@ static int check_authn(request_rec * r, const char *sent_user, const char *sent_
       break;
     case true:
       pgr = PQexec(pgc, apr_psprintf(r->pool,
-				     "select u.id, username, password, coalesce(case when start_page !~ '^[0-9]$' then page_file else NULL end, case when u.start_page ~ '^[0-9]+$' then '/p/dashboard_page?p_dashboard_id=' || u.start_page else NULL end) as location from _ag_um_users u left join lu_page_names pn ON pn.code = u.start_page where coalesce(u.start_date, now()) <= now() and coalesce(u.end_date, now()) >= now() and username = '%s'",
+				     //				     "select u.id, username, password, coalesce(case when start_page !~ '^[0-9]$' then page_file else NULL end, case when u.start_page ~ '^[0-9]+$' then '/p/dashboard_page?p_dashboard_id=' || u.start_page else NULL end) as location from _ag_um_users u left join lu_page_names pn ON pn.code = u.start_page where coalesce(u.start_date, now()) <= now() and coalesce(u.end_date, now()) >= now() and username = '%s'",
+				     "select u.id, username, password, NULL as location from _ag_um_users u WHERE username = '%s'",
 				     sent_user)
 		   );
       if (PQresultStatus(pgr) != PGRES_TUPLES_OK) {
