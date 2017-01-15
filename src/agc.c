@@ -47,7 +47,7 @@ void expand_psp_calls(char *line) {
   char      new_line[MAX_STRING_CHARS];
   while (0 == (rc = regexec(&preg, line, NSUBS, subs, 0))) {
     snprintf(new_line, sizeof(new_line),
-	     "%.*spsp_%.*s(%.*s,%.*s, _e_, _mode_)%.*s",
+	     "%.*sag_%.*s(%.*s,%.*s, _argv_)%.*s",
 	     subs[1].rm_eo - subs[1].rm_so,
 	     line + subs[1].rm_so,
 	     subs[2].rm_eo - subs[2].rm_so,
@@ -223,8 +223,8 @@ int main(int argc, char * argv[])
 	    {
 	      in_declare = false;
 	      printf("begin\n");
-	      if (environment == 'p') printf("_e_ := 0;\n");
-	      printf("if _e_ > 0 then _p_[_n_] := '<!-- start: %s -->'; _n_ := _n_ + 1; end if;\n", function_name);
+	      //	      if (environment == 'p') printf("_e_ := 0;\n");
+	      //	      printf("if _e_ > 0 then _p_[_n_] := '<!-- start: %s -->'; _n_ := _n_ + 1; end if;\n", function_name);
 	      printf("_p_[_n_] := \'");
 	      line_trimmed += 2;
 	    }
