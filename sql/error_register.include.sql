@@ -22,3 +22,9 @@ CREATE TABLE IF NOT EXISTS _error_register
   additional_information text,
   is_processed boolean DEFAULT false
 );
+CREATE SEQUENCE IF NOT EXISTS _error_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
