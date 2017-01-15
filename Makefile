@@ -21,7 +21,7 @@ APXS_LIBS=-lpq -lrhash
 
 VERSION:=1.0
 
-.PHONY: functions install install-local-appgoo-net
+.PHONY: functions install install-local-appgoo-net clean dist-clean
 
 all: agc mod_ag.la appgoo
 
@@ -59,6 +59,15 @@ src/template_pgsql_function_begin_sql.h: src/template_pgsql_function_begin.sql
 
 src/template_pgsql_function_end_sql.h: src/template_pgsql_function_end.sql
 	@$(XXD) -i $< $@
+
+clean:
+	@rm -f agc *~ core
+	@find . -name "*~" -type f -delete
+	@find . -name core -type f -delete
+
+dist-clean: clean
+	@rm -f *.pgsql make.files make.dep
+	@find . -name "*.pgsql" -type f -delete
 
 functions: agc $(CREDF) sql/ag_parse_get.include.sql
 	@psql $(PGFLAGS) -f sql/ag_parse_get.include.sql
