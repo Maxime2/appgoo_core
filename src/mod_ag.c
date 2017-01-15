@@ -956,7 +956,7 @@ static int ag_handler (request_rec * r)
      char *update_command;
      struct utsname node;
      config->ServerName = apr_pstrdup(config->pool, r->server->server_hostname);
-
+     /*
      update_command = apr_psprintf(r->pool, "UPDATE system_parameters SET string_value='%s', integer_value=%ld WHERE id=2", config->ServerName, gethostid());
 
      pgr = PQexec (pgc, update_command);
@@ -978,6 +978,7 @@ static int ag_handler (request_rec * r)
        update_command = apr_psprintf(r->pool, "uname() failed, %d -- %s; node_name is not updated", errno, strerror(errno));
        spit_pg_error_syslog (update_command);
      }
+     */
    }
 
    /* removing extention (.ag or other) from file name, and adding "ag_" for function name, i.e. foo.ag becomes ag_foo() */
