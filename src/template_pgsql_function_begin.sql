@@ -1,5 +1,5 @@
 select * FROM db_drop_function('ag_%s');
-create or replace function ag_%s (_ag_GET_ varchar, CU integer, _argv_ text[])
+create or replace function ag_%s (_ag_GET_ varchar, CU bigint, _argv_ text[])
 returns %s as $$
 <<%s>>
 declare
