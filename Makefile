@@ -69,8 +69,11 @@ dist-clean: clean
 	@rm -f *.pgsql make.files make.dep
 	@find . -name "*.pgsql" -type f -delete
 
-functions: agc $(CREDF) sql/ag_parse_get.include.sql
+functions: agc $(CREDF) sql/ag_parse_get.include.sql sql/db_error_register.include.sql sql/db_urldecode.include.sql sql/db_urlencode.include.sql
 	@psql $(PGFLAGS) -f sql/ag_parse_get.include.sql
+	@psql $(PGFLAGS) -f sql/db_error_register.include.sql
+	@psql $(PGFLAGS) -f sql/db_urldecode.include.sql
+	@psql $(PGFLAGS) -f sql/db_urlencode.include.sql
 
 appgoo: $(CREDF) functions make.dep $(APPGOOS)
 
