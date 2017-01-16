@@ -103,7 +103,7 @@ ExpiresByType text/css "access plus 1 hour"
 
 <IfModule mod_headers.c>
 
-	Header set Content-Security-Policy "default-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' maxcdn.bootstrapcdn.com; report-uri /syslog/error; child-src data:"
+	Header set Content-Security-Policy "default-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' ajax.googleapis.com; style-src 'self' 'unsafe-inline' maxcdn.bootstrapcdn.com; report-uri /syslog/error; child-src data:; font-src 'self' 'unsafe-inline' data:"
 
     # `mod_headers` cannot match based on the content-type, however,
     # the `Content-Security-Policy` response header should be send
