@@ -9,3 +9,6 @@
 /jquery.min.js
 agc
 mod_ag.la
+mod_session_ag.la
+make.dep
+make.files
