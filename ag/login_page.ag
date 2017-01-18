@@ -1,8 +1,7 @@
 # Login Page
-# Author: Dave Berner
+# Author: Stephen Alleyn
 #
-# 2015-03-24 Skeleton
-# 2015-09-14 MZ Login functionality with SHA3-512 double hashes
+# 2016-01-17 New appGoo Login Page
 
 
 login_page
@@ -25,28 +24,39 @@ hostURI varchar;
 
     if p_login != '~' and p_password != '~' then
 
-        select count(1) into x
+    /*  select count(1) into x
         from users
         where username = p_login
         and password = p_password
         ;
+    */
+
+      x := 1;
 
     end if;
 
     */
 
 %><!doctype html>
-<html class="no-js">
-<head>
-  <title>Purgora Login</title>
-<link rel="stylesheet" type="text/css" href="/assets/css/app.css">
-<% if p_performance_test = 8362 then /* this is the parameter passed by Pingdom RUM (Real User Monitoring) to ensure that the application has suitable peformance */ %>
-  <%= psp_js_pingdom('x', 0) %>
-<% end if; %>
-<!--#include virtual="/assets/js/jl-syslog.js"-->
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <title>appGoo  Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <style> 
+body{background-image:url("/ag/assets/fs/img/appGoo-logo-side-tp.png");background-repeat:no-repeat;background-position:-65px -40px;margin:0px !important;}html{background:linear-gradient( 135deg,#FFF,#FFF,#61B5BF,#5CB1BB);}.form-signin{max-width:300px;padding:19px 29px 29px;margin:0 auto 20px;}.form-signin .form-signin-heading,.form-signin .checkbox{margin-bottom:10px;}.form-signin input[type="text"],.form-signin input[type="password"]{font-size:16px;height:auto;margin-bottom:15px;padding:7px 9px;}.password_forget{margin-top:20px;}.login_btn{color:white;background:#58b1bc;}.login_logo img{width:50px;height:50px;}.login_logo{text-align:center;}.container{margin:0;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}input{font-size:16px;height:auto;margin-bottom:15px;padding:7px 9px;border:1px solid #cccccc;box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);transition:border linear 0.2s,box-shadow linear 0.2s;-webkit-transition:border linear 0.2s,box-shadow linear 0.2s;background-color:#ffffff;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);-moz-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075);-moz-transition:border linear 0.2s,box-shadow linear 0.2s;-o-transition:border linear 0.2s,box-shadow linear 0.2s;line-height:20px;color:#555555;vertical-align:middle;border-radius:4px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:normal;word-spacing:normal;text-transform:none;text-indent:0px;text-shadow:none;display:block;width:100%;}textarea:focus,input[type="text"]:focus,input[type="password"]:focus,input[type="datetime"]:focus,input[type="datetime-local"]:focus,input[type="date"]:focus,input[type="month"]:focus,input[type="time"]:focus,input[type="week"]:focus,input[type="number"]:focus,input[type="email"]:focus,input[type="url"]:focus,input[type="search"]:focus,input[type="tel"]:focus,input[type="color"]:focus,.uneditable-input:focus{border-color:rgba(82,168,236,0.8);outline:0;outline:thin dotted \9;-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);-moz-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);}.btn{display:inline-block;margin-bottom:0;line-height:20px;color:#ffffff;cursor:pointer;text-align:center;vertical-align:middle;cursor:pointer;border:0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;padding:11px 19px;font-size:17.5px;border-radius:6px;}label{display:block;}
+    </style>
 
-<script>
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="/ag/assets/fs/img/appGoo-emblem-tp.png">
 
+    <script>
 /*
  * js-sha3 v0.3.1
  * https://github.com/emn178/js-sha3
@@ -480,10 +490,10 @@ hostURI varchar;
   }
 }(this));
 
-										  
+                                          
 
 /* *** */
-										  
+                                          
 function utf8_to_b64(str) {
     return window.btoa(unescape(encodeURIComponent(str)));
 }
@@ -501,91 +511,31 @@ function f_sha3() {
   form_login.submit();
   return true;
 }
+    </script>
+  </head>
 
-</script>
-</head>
+  <body sip-shortcut-listen="true">
 
-<body>
+    <div class="container">
+      <form name="form_login" class="form-signin" method="POST" action="/p/birthday_paradox" onsubmit="return f_sha3();">
+        <input type="hidden" name="p_method" value="POST" />
+        <input type="hidden" name="p_mimetype" value="" />
+        <input type="hidden" name="p_body" value="" />
+        
+        <h1 class = "login_logo"><img  src="/ag/assets/fs/img/appGoo-emblem-tp.png"/></h1>
+        
+        <input id="p_login" type="text" class="input-block-level" placeholder="Username" name="p_login">
+        <input id="p_password" type="password" class="input-block-level" placeholder="Password" name="p_password">
+        <button class="btn btn-large login_btn" type="submit">Login</button>
+        <!-- <input type="submit" class="btn btn-large login_btn" value="Login"> -->
+        <label class="password_forget">If you have forgotten your password,<br>please contact your local system administrator
+        </label>
+      </form>
 
-    <aside class="l-app-sidebar">
-        <h1 class="logo">PURGORA</h1>
-    </aside>
+    </div> <!-- /container -->
 
-    <div class="page__header">
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
-        <div class="global-width">
-
-  <h1>&nbsp;</h1>
-
-            <ul class="actions">
-                <li class="actions__item">
-                    <h1 class="jesla-logo"><a href="//www.jeslalabs.com" target="_blank" title="Jesla Labs website">Jesla <span>Labs</span></a></h1>
-                </li>
-            </ul>
-            <!-- .actions -->
-        </div>
-        <!-- .global-width -->
-    </div>
-    <!-- .page__header-->
-
-    <main class="page global-width">
-
-        <section class="panel">
-
-            <div class="panel__header panel-login__header">
-               <h1>Login</h1>
-            </div>
-
-            <form name="form_login" method="POST" action="<%= p_location %>" onsubmit="return f_sha3();">
-  <input type="hidden" name="p_method" value="<%= p_method %>" />
-  <input type="hidden" name="p_mimetype" value="<%= p_mimetype %>" />
-  <input type="hidden" name="p_body" value="<%= p_body %>" />
-                <div class="panel__content panel--login">
-
-                    <ul class="form">
-                        <li class="form__item">
-                            <label class="label login-text" for="p_login">
-                                <span>Email:</span>
-                            </label>
-                            <div class="input">
-                                <input id="p_login" type="text" name="p_login">
-                            </div>
-                        </li>
-                        <li class="form__item">
-                            <label class="label login-text" for="p_password">
-                                <span>Password:</span>
-                            </label>
-                            <div class="input">
-                                <input id="p_password" type="password" name="p_password">
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <!-- .panel__content -->
-
-                <!-- .panel__footer -->
-
-                <div class="panel__footer">
-
-                    <div class="actions login-actions">
-                        <div class="actions__item">
-                            <input type="submit" class="btn--primary login-text login-button" value="Login">
-                        </div>
-                        <div>
-                        <div class="actions__item login-text__small">
-                            <div><br>If you have forgotten your password,<br>please contact your local system administrator</div>
-                        </div>
-                        </div>
-                    </div>
-                    <!-- .actions -->
-
-                </div>
-            </form>
-            <!-- end login form -->
-
-        </section>
-        <!-- .panel -->
-    </main>
-
-</body>
+  </body>
 </html>
