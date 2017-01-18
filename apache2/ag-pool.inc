@@ -1,6 +1,6 @@
 <IfModule mod_ag.c>
 agEnabled On
-agConnectionString "host=/var/run/postgresql dbname=appgoo user=appgoo password=foo"
+agConnectionString "host=/var/run/postgresql dbname=appgoo user=ubuntu password=appgoo"
 #AddHandler ag-handler .ag
 #AddType text/html .ag
 agPoolKey APPGOO
