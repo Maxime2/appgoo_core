@@ -9,8 +9,9 @@ AGC=./agc
 CREDF=pg-credentials.txt
 CREDS=$(shell cat $(CREDF))
 WD=$(shell pwd)
-SRCS=$(shell find . -type f -name "*.ag" ! -name "*.include*" ! -path "*deleted*")
+SRCS=$(shell find . -type f -name "*.ag" ! -name "*.include*" ! -path "*.deleted*")
 APPGOOS=$(patsubst %.ag,%.pgsql,$(SRCS))
+SQLS=$(shell find ./{db_functions,sql}/ -type f -name "*.sql" ! -name "*.include*" ! -path "*.deleted*")
 INCDIRS=$(shell find . -type d ! -regex ".*/\..*" ! -path "*/apache2*" ! -path "*/uploaded*" ! -path "*/sql*" ! -path "*/assets*" ! -path "*/src*" )
 
 PGFLAGS=-q -w "$(CREDS)"
@@ -69,7 +70,8 @@ dist-clean: clean
 	@rm -f *.pgsql make.files make.dep
 	@find . -name "*.pgsql" -type f -delete
 
-functions: agc $(CREDF) sql/ag_parse_get.include.sql sql/db_error_register.include.sql sql/error_register.include.sql sql/db_urldecode.include.sql sql/db_urlencode.include.sql
+functions: agc $(CREDF) $(SQLS)
+	@for fname in "$(SQLS)" ; do psql $(PGFLAGS) -f $${fname} ; done
 	@psql $(PGFLAGS) -f sql/ag_parse_get.include.sql
 	@psql $(PGFLAGS) -f sql/error_register.include.sql
 	@psql $(PGFLAGS) -f sql/db_error_register.include.sql
