@@ -1,5 +1,7 @@
 ### About appGoo Core ###
 
+Refer to the [Concept & Overview wiki](https://bitbucket.org/appgoo/_concept-and-overview/wiki/Home "Click here to read about an appGoo Overview") for an overview of the entire appGoo landscape.
+
 Refer to the [Project Wiki](https://bitbucket.org/appgoo/appgoo_core/wiki/Home "Click here to go to the appGoo Core wiki") file for all documentation on appGoo core.
 
 We use a [Trello Board](https://bitbucket.org/appgoo/appgoo_core/addon/trello/trello-board "Click here to go to the appGoo Core Trello Board") embedded into Bitbucket to manage all development requirements and status. It can be also updated direct from Trello. Either way is fine.
