@@ -23,6 +23,7 @@ hostURI varchar;
     /* select string_value into hostURI from system_parameters where name = 'server_host_uri';
 
     if p_login != '~' and p_password != '~' then
+    */
 
     /*  select count(1) into x
         from users
@@ -30,7 +31,7 @@ hostURI varchar;
         and password = p_password
         ;
     */
-
+    /*
       x := 1;
 
     end if;
