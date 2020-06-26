@@ -62,7 +62,8 @@ src/template_pgsql_function_end_sql.h: src/template_pgsql_function_end.sql
 	@$(XXD) -i $< $@
 
 clean:
-	@rm -f agc *~ core
+	@rm -f agc *~ core *.la
+	@rm -rf ./libs src/.libs
 	@find . -name "*~" -type f -delete
 	@find . -name core -type f -delete
 
