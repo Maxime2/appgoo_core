@@ -200,6 +200,8 @@ static apr_status_t encrypt_string(request_rec * r, const apr_crypto_t *f,
     }
     encryptlen += tlen;
 
+    apr_crypto_block_cleanup(block);
+
     /* prepend the salt and the iv to the result */
     combined = apr_palloc(r->pool, ivSize + encryptlen + sizeof(apr_uuid_t));
     memcpy(combined, &salt, sizeof(apr_uuid_t));
