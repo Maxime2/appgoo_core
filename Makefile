@@ -1,9 +1,10 @@
 # Makefile to compile appGoo
 
-SHELL=/bin/bash
-APXS=apxs
-PGCONFIG:=$(shell find / -name pg_config -print -quit 2>/dev/null )
-XXD=xxd
+SHELL = /bin/bash
+PREFIX ?= /usr/local
+APXS ?= apxs
+PGCONFIG ?= pg_config
+XXD ?= xxd
 AGC=./agc
 
 CREDF=pg-credentials.txt
@@ -24,7 +25,7 @@ VERSION:=1.0
 
 .PHONY: functions install install-local-appgoo-net clean dist-clean
 
-all: agc mod_ag.la appgoo
+all: agc mod_ag.la mod_session_ag.la appgoo
 
 install: functions mod_ag.la mod_session_ag.la apache2/ag-host.inc apache2/ag-location.inc apache2/ag-sessions.inc
 	@sudo ln -fst /etc/apache2/sites-available/ $(WD)/apache2/ag-pool.inc
