@@ -1,11 +1,12 @@
+/* -*- mode: c; c-file-style: "apache"; -*- */
 /*
  * mod_ag.c
  *
-*/
+ */
 /* PostgreSQL pool
    Originally based on mod_dbi_pool.c by Paul Querna, 
    http://www.outoforder.cc/projects/apache/mod_dbi_pool/
- */
+*/
 /* Upload filter
    Originally based on mod_upload by Nick Kew,
    http://apache.webthing.com/mod_upload/
@@ -73,10 +74,10 @@ apr_status_t apr_filepath_list_split_impl(apr_array_header_t **pathelts,
 /* use __(xx) macro for debug logging */
 #define __(s, ...)  ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, __VA_ARGS__) ;
 
-#define ISINT(val)						\
-  for ( p = val; *p; ++p)					\
-    if ( ! isdigit(*p) )					\
-      return "Argument must be numeric!"
+#define ISINT(val)                              \
+  for ( p = val; *p; ++p)                       \
+      if ( ! isdigit(*p) )                      \
+          return "Argument must be numeric!"
 
 #define clean_up_connection(s)			\
   PQclear(pgr),					\
@@ -95,30 +96,30 @@ void ag_pool_close(server_rec* s, PGconn* sql);
 extern module AP_MODULE_DECLARE_DATA ag_module ;
 
 typedef struct ag_config {
-  const char * connection_string;
-  int connection_string_set;
-  const char * key;
-  int key_set;
-  const char * ServerName;
-  int ServerName_set;
-  apr_pool_t * pool;
-  apr_reslist_t* dbpool ;
-  int nmin, nmin_set ;
-  int nkeep, nkeep_set ;
-  int nmax, nmax_set ;
-  int exptime, exptime_set ;
-  int is_enabled, is_enabled_set;
+    const char * connection_string;
+    int connection_string_set;
+    const char * key;
+    int key_set;
+    const char * ServerName;
+    int ServerName_set;
+    apr_pool_t * pool;
+    apr_reslist_t* dbpool ;
+    int nmin, nmin_set ;
+    int nkeep, nkeep_set ;
+    int nmax, nmax_set ;
+    int exptime, exptime_set ;
+    int is_enabled, is_enabled_set;
 } ag_cfg;
 
 typedef struct {
-  char* file_field ;
-  int file_field_set;
-  char* folder_field ;
-  int folder_field_set;
-  char* dir_field ;
-  int dir_field_set;
-  apr_size_t form_size ;
-  int form_size_set;
+    char* file_field ;
+    int file_field_set;
+    char* folder_field ;
+    int folder_field_set;
+    char* dir_field ;
+    int dir_field_set;
+    apr_size_t form_size ;
+    int form_size_set;
     char *dir;
     int authoritative;
     int authoritative_set;
@@ -153,22 +154,22 @@ typedef struct {
 } ag_dir_cfg ;
 
 typedef struct upload_ctx {
-  apr_pool_t* pool ;
-  server_rec *server;
-  apr_table_t* form ;
-  char* boundary ;
-  char* key ;
-  char* val ;
-  char* file_field ;
-  char* leftover ;
-  apr_size_t leftsize;
-  enum { p_none, p_head, p_field, p_end, p_done } parse_state ;
-  char is_file ;
+    apr_pool_t* pool ;
+    server_rec *server;
+    apr_table_t* form ;
+    char* boundary ;
+    char* key ;
+    char* val ;
+    char* file_field ;
+    char* leftover ;
+    apr_size_t leftsize;
+    enum { p_none, p_head, p_field, p_end, p_done } parse_state ;
+    char is_file ;
 } upload_ctx ;
 
 typedef struct {
-  request_rec *r;
-  char *args;
+    request_rec *r;
+    char *args;
 } params_t;
 
 
@@ -180,50 +181,50 @@ static apr_hash_t *ag_pool_config;
 static apr_hash_t *ag_pool_config;
 static int (*ap_session_load_fn) (request_rec * r, session_rec ** z) = NULL;
 static apr_status_t (*ap_session_get_fn)(request_rec * r, session_rec * z,
-        const char *key, const char **value) = NULL;
+                                         const char *key, const char **value) = NULL;
 static apr_status_t (*ap_session_set_fn)(request_rec * r, session_rec * z,
-        const char *key, const char *value) = NULL;
+                                         const char *key, const char *value) = NULL;
 static void (*ap_request_insert_filter_fn) (request_rec * r) = NULL;
 static void (*ap_request_remove_filter_fn) (request_rec * r) = NULL;
 
 
 static APR_DECLARE_NONSTD(void *) apr_pmemcat(apr_pool_t *p, apr_size_t *len, ... ) {
-  va_list args;
-  void *m, *res, *cm;
+    va_list args;
+    void *m, *res, *cm;
 
-  *len = 0;
+    *len = 0;
 
-  va_start(args, len);
-  while ((m = va_arg(args, void *)) != NULL) {
-    apr_size_t memlen = va_arg(args, apr_size_t);
-    *len += memlen;
-  }
-  va_end(args);
+    va_start(args, len);
+    while ((m = va_arg(args, void *)) != NULL) {
+        apr_size_t memlen = va_arg(args, apr_size_t);
+        *len += memlen;
+    }
+    va_end(args);
 
-  cm = res = (void *) apr_palloc(p, *len);
+    cm = res = (void *) apr_palloc(p, *len);
 
-  va_start(args, len);
-  while ((m = va_arg(args, void *)) != NULL) {
-    apr_size_t memlen = va_arg(args, apr_size_t);
-    if (memlen == 0) continue;
-    memcpy(cm, m, memlen);
-    cm += memlen;
-  }
-  va_end(args);
+    va_start(args, len);
+    while ((m = va_arg(args, void *)) != NULL) {
+        apr_size_t memlen = va_arg(args, apr_size_t);
+        if (memlen == 0) continue;
+        memcpy(cm, m, memlen);
+        cm += memlen;
+    }
+    va_end(args);
 
-  return res;
+    return res;
 }
 
 
 
 static void* create_ag_config(apr_pool_t* p, server_rec* s) {
-  ag_cfg* config = (ag_cfg*) apr_pcalloc(p, sizeof(ag_cfg)) ;
-  config->is_enabled = true;
-  config->connection_string = NULL;
-  config->nmax = 1;
-  config->exptime = 3600000;
-  config->pool = p;
-  return config ;
+    ag_cfg* config = (ag_cfg*) apr_pcalloc(p, sizeof(ag_cfg)) ;
+    config->is_enabled = true;
+    config->connection_string = NULL;
+    config->nmax = 1;
+    config->exptime = 3600000;
+    config->pool = p;
+    return config ;
 }
 
 static void *merge_ag_config(apr_pool_t * p, void *basev, void *addv) {
@@ -256,29 +257,29 @@ static void *merge_ag_config(apr_pool_t * p, void *basev, void *addv) {
 
 
 static void* create_dir_config(apr_pool_t* p, char* x) {
-  ag_dir_cfg *conf = apr_pcalloc(p, sizeof(ag_dir_cfg)) ;
+    ag_dir_cfg *conf = apr_pcalloc(p, sizeof(ag_dir_cfg)) ;
 
-  conf->form_size = 8 ;
+    conf->form_size = 8 ;
 
-  conf->dir = x;
-  /* Any failures are fatal. */
-  conf->authoritative = 1;
+    conf->dir = x;
+    /* Any failures are fatal. */
+    conf->authoritative = 1;
 
-  /* form size defaults to 8k */
-  conf->max_form_size = HUGE_STRING_LEN;
+    /* form size defaults to 8k */
+    conf->max_form_size = HUGE_STRING_LEN;
 
-  /* default form field names */
-  conf->username = "p_login";
-  conf->password = "p_password";
-  conf->location = "p_location";
-  conf->method = "p_method";
-  conf->mimetype = "p_mimetype";
-  conf->body = "p_body";
-  conf->file_field = "p_file";
-  conf->folder_field = "p_folder";
-  conf->dir_field = NULL;
+    /* default form field names */
+    conf->username = "p_login";
+    conf->password = "p_password";
+    conf->location = "p_location";
+    conf->method = "p_method";
+    conf->mimetype = "p_mimetype";
+    conf->body = "p_body";
+    conf->file_field = "p_file";
+    conf->folder_field = "p_folder";
+    conf->dir_field = NULL;
   
-  return conf ;
+    return conf ;
 }
 
 static void *merge_dir_config(apr_pool_t * p, void *basev, void *addv) {
@@ -329,52 +330,52 @@ static void *merge_dir_config(apr_pool_t * p, void *basev, void *addv) {
 }
 
 static const char* set_filename(cmd_parms* cmd, void* cfg, const char* name) {
-  ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
-  conf->file_field = apr_pstrdup(cmd->pool, name) ;
-  conf->file_field_set = 1;
-  return NULL ;
+    ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
+    conf->file_field = apr_pstrdup(cmd->pool, name) ;
+    conf->file_field_set = 1;
+    return NULL ;
 }
 
 static const char* set_foldername(cmd_parms* cmd, void* cfg, const char* name) {
-  ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
-  conf->folder_field = apr_pstrdup(cmd->pool, name) ;
-  conf->folder_field_set = 1;
-  return NULL ;
+    ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
+    conf->folder_field = apr_pstrdup(cmd->pool, name) ;
+    conf->folder_field_set = 1;
+    return NULL ;
 }
 
 static const char* set_directory(cmd_parms* cmd, void* cfg, const char* name) {
-  ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
-  conf->dir_field = apr_pstrdup(cmd->pool, name) ;
-  conf->dir_field_set = 1;
-  return NULL ;
+    ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
+    conf->dir_field = apr_pstrdup(cmd->pool, name) ;
+    conf->dir_field_set = 1;
+    return NULL ;
 }
 
 static const char* set_formsize(cmd_parms* cmd, void* cfg, const char* sz) {
-  ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
-  apr_off_t size;
-  if (APR_SUCCESS != apr_strtoff(&size, sz, NULL, 10)
-      || size < 0 || size > APR_SIZE_MAX) {
-    return "agUploadFormSize must be a size in bytes, or zero.";
-  }
-  conf->form_size = (apr_size_t)size ;
-  conf->form_size_set = 1;
-  return NULL ;
+    ag_dir_cfg *conf = (ag_dir_cfg*) cfg ;
+    apr_off_t size;
+    if (APR_SUCCESS != apr_strtoff(&size, sz, NULL, 10)
+        || size < 0 || size > APR_SIZE_MAX) {
+        return "agUploadFormSize must be a size in bytes, or zero.";
+    }
+    conf->form_size = (apr_size_t)size ;
+    conf->form_size_set = 1;
+    return NULL ;
 }
 
 static const char *check_string(cmd_parms * cmd, const char *string) {
-  if (!string || !*string || ap_strchr_c(string, '=') || ap_strchr_c(string, '&')) {
-    return apr_pstrcat(cmd->pool, cmd->directive->directive,
-		       " cannot be empty, or contain '=' or '&'.",
-		       NULL);
-  }
-  return NULL;
+    if (!string || !*string || ap_strchr_c(string, '=') || ap_strchr_c(string, '&')) {
+        return apr_pstrcat(cmd->pool, cmd->directive->directive,
+                           " cannot be empty, or contain '=' or '&'.",
+                           NULL);
+    }
+    return NULL;
 }
 
 static const char *set_cookie_form_username(cmd_parms * cmd, void *config, const char *username) {
-  ag_dir_cfg *conf = (ag_dir_cfg *) config;
-  conf->username = username;
-  conf->username_set = 1;
-  return check_string(cmd, username);
+    ag_dir_cfg *conf = (ag_dir_cfg *) config;
+    conf->username = username;
+    conf->username_set = 1;
+    return check_string(cmd, username);
 }
 
 static const char *set_cookie_form_password(cmd_parms * cmd, void *config, const char *password) {
@@ -413,17 +414,17 @@ static const char *set_cookie_form_body(cmd_parms * cmd, void *config, const cha
 }
 
 static const char *set_cookie_form_size(cmd_parms * cmd, void *config, const char *arg) {
-  ag_dir_cfg *conf = (ag_dir_cfg *)config;
-  apr_off_t size;
+    ag_dir_cfg *conf = (ag_dir_cfg *)config;
+    apr_off_t size;
 
-  if (APR_SUCCESS != apr_strtoff(&size, arg, NULL, 10)
-      || size < 0 || size > APR_SIZE_MAX) {
-    return "AuthFormSize must be a size in bytes, or zero.";
-  }
-  conf->max_form_size = (apr_size_t)size;
-  conf->max_form_size_set = 1;
+    if (APR_SUCCESS != apr_strtoff(&size, arg, NULL, 10)
+        || size < 0 || size > APR_SIZE_MAX) {
+        return "AuthFormSize must be a size in bytes, or zero.";
+    }
+    conf->max_form_size = (apr_size_t)size;
+    conf->max_form_size_set = 1;
 
-  return NULL;
+    return NULL;
 }
 
 static const char *set_login_required_location(cmd_parms * cmd, void *config, const char *loginrequired) {
@@ -431,7 +432,7 @@ static const char *set_login_required_location(cmd_parms * cmd, void *config, co
     const char *err;
 
     conf->loginrequired = ap_expr_parse_cmd(cmd, loginrequired, AP_EXPR_FLAG_STRING_RESULT,
-                                        &err, NULL);
+                                            &err, NULL);
     if (err) {
         return apr_psprintf(cmd->pool,
                             "Could not parse login required expression '%s': %s",
@@ -447,7 +448,7 @@ static const char *set_login_success_location(cmd_parms * cmd, void *config, con
     const char *err;
 
     conf->loginsuccess = ap_expr_parse_cmd(cmd, loginsuccess, AP_EXPR_FLAG_STRING_RESULT,
-                                        &err, NULL);
+                                           &err, NULL);
     if (err) {
         return apr_psprintf(cmd->pool,
                             "Could not parse login success expression '%s': %s",
@@ -463,7 +464,7 @@ static const char *set_logout_location(cmd_parms * cmd, void *config, const char
     const char *err;
 
     conf->logout = ap_expr_parse_cmd(cmd, logout, AP_EXPR_FLAG_STRING_RESULT,
-                                        &err, NULL);
+                                     &err, NULL);
     if (err) {
         return apr_psprintf(cmd->pool,
                             "Could not parse logout required expression '%s': %s",
@@ -489,10 +490,10 @@ static const char *set_authoritative(cmd_parms * cmd, void *config, int flag) {
 }
 
 static const char *set_fake_basic_auth(cmd_parms * cmd, void *config, int flag) {
-  ag_dir_cfg *conf = (ag_dir_cfg *) config;
-  conf->fakebasicauth = flag;
-  conf->fakebasicauth_set = 1;
-  return NULL;
+    ag_dir_cfg *conf = (ag_dir_cfg *) config;
+    conf->fakebasicauth = flag;
+    conf->fakebasicauth_set = 1;
+    return NULL;
 }
 
 static const char *set_disable_no_store(cmd_parms * cmd, void *config, int flag) {
@@ -503,55 +504,55 @@ static const char *set_disable_no_store(cmd_parms * cmd, void *config, int flag)
 }
 
 static const char *set_content_type(cmd_parms * cmd, void *config, const char *content_type) {
-  ag_dir_cfg *conf = (ag_dir_cfg *) config;
-  conf->content_type = content_type;
-  conf->content_type_set = 1;
-  return NULL;
+    ag_dir_cfg *conf = (ag_dir_cfg *) config;
+    conf->content_type = content_type;
+    conf->content_type_set = 1;
+    return NULL;
 }
 
 static const char* set_param(cmd_parms* cmd, void* cfg,
-	const char* val) {
-  const char* p ;
-  ag_cfg* ag = (ag_cfg*) ap_get_module_config(cmd->server->module_config, &ag_module ) ;
+                             const char* val) {
+    const char* p ;
+    ag_cfg* ag = (ag_cfg*) ap_get_module_config(cmd->server->module_config, &ag_module ) ;
 
-  switch ( (intptr_t) cmd->info ) {
-  case cmd_setkey:
-    /*
-    if (strlen(conn_id) > 255) {
-        return APR_EGENERAL;
+    switch ( (intptr_t) cmd->info ) {
+    case cmd_setkey:
+        /*
+          if (strlen(conn_id) > 255) {
+          return APR_EGENERAL;
+          }
+          for (c = 0; c < strlen(conn_id); c++) {
+          if (conn_id[c] < ' ') {
+          return APR_EGENERAL;
+          }
+          }
+        */
+        ag->key = val;
+        apr_hash_set(ag_pool_config, ag->key, APR_HASH_KEY_STRING, ag);
+        ag->key_set = 1;
+        break ;
+    case cmd_connection: ag->connection_string = val ;
+        ag->connection_string_set = 1;
+        break ;
+    case cmd_min: ISINT(val) ; ag->nmin = atoi(val) ;
+        ag->nmin_set = 1;
+        break ;
+    case cmd_keep: ISINT(val) ; ag->nkeep = atoi(val) ;
+        ag->nkeep_set = 1;
+        break ;
+    case cmd_max: ISINT(val) ; ag->nmax = atoi(val) ;
+        ag->nmax_set = 1;
+        break ;
+    case cmd_exp: ISINT(val) ; ag->exptime = atoi(val) ;
+        ag->exptime_set = 1;
+        break ;
+    case cmd_enabled:
+        if (!strcasecmp(val, "on")) ag->is_enabled = true;
+        else ag->is_enabled = false;
+        ag->is_enabled_set = 1;
+        break;
     }
-    for (c = 0; c < strlen(conn_id); c++) {
-        if (conn_id[c] < ' ') {
-            return APR_EGENERAL;
-        }
-    }
-    */
-    ag->key = val;
-    apr_hash_set(ag_pool_config, ag->key, APR_HASH_KEY_STRING, ag);
-    ag->key_set = 1;
-    break ;
-  case cmd_connection: ag->connection_string = val ;
-    ag->connection_string_set = 1;
-    break ;
-  case cmd_min: ISINT(val) ; ag->nmin = atoi(val) ;
-    ag->nmin_set = 1;
-    break ;
-  case cmd_keep: ISINT(val) ; ag->nkeep = atoi(val) ;
-    ag->nkeep_set = 1;
-    break ;
-  case cmd_max: ISINT(val) ; ag->nmax = atoi(val) ;
-    ag->nmax_set = 1;
-    break ;
-  case cmd_exp: ISINT(val) ; ag->exptime = atoi(val) ;
-    ag->exptime_set = 1;
-    break ;
-  case cmd_enabled:
-    if (!strcasecmp(val, "on")) ag->is_enabled = true;
-    else ag->is_enabled = false;
-    ag->is_enabled_set = 1;
-    break;
-  }
-  return NULL ;
+    return NULL ;
 }
 
 
@@ -559,124 +560,124 @@ static const char* set_param(cmd_parms* cmd, void* cfg,
 /* an apr_reslist_constructor for PgSQL connections */
 
 static apr_status_t ag_pool_construct(void** db, void* params, apr_pool_t* pool) {
-  ag_cfg* ag = (ag_cfg*) params ;
-  PGconn* sql = PQconnectdb (ag->connection_string);
-  *db = sql ;
+    ag_cfg* ag = (ag_cfg*) params ;
+    PGconn* sql = PQconnectdb (ag->connection_string);
+    *db = sql ;
 
-  if ( sql )
-    return APR_SUCCESS ;
-  else
-    return APR_EGENERAL ;
+    if ( sql )
+        return APR_SUCCESS ;
+    else
+        return APR_EGENERAL ;
 }
 
 static apr_status_t ag_pool_destruct(void* sql, void* params, apr_pool_t* pool) {
-  PQfinish((PGconn*)sql) ;
-  return APR_SUCCESS ;
+    PQfinish((PGconn*)sql) ;
+    return APR_SUCCESS ;
 }
 
 static int setup_db_pool(apr_pool_t* p, apr_pool_t* plog,
-	apr_pool_t* ptemp, server_rec* s) {
+                         apr_pool_t* ptemp, server_rec* s) {
 
-  void *data = NULL;
-  char *key;
-  const char *userdata_key = "ag_post_config";
-  apr_hash_index_t *idx;
-  apr_ssize_t len;
-  ag_cfg *ag;
+    void *data = NULL;
+    char *key;
+    const char *userdata_key = "ag_post_config";
+    apr_hash_index_t *idx;
+    apr_ssize_t len;
+    ag_cfg *ag;
 
-  // This code is used to prevent double initialization of the module during Apache startup
-  apr_pool_userdata_get(&data, userdata_key, s->process->pool);
-  if ( data == NULL ) { 
-    apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
-    return OK; 
-  }
-
-  for (idx = apr_hash_first(p, ag_pool_config); idx; idx = apr_hash_next(idx)) {
-
-    apr_hash_this(idx, (void *) &key, &len, (void *) &ag);
-
-    if ( apr_reslist_create(&ag->dbpool,
-			    ag->nmin,
-			    ag->nkeep,
-			    ag->nmax,
-			    ag->exptime,
-			    ag_pool_construct,
-			    ag_pool_destruct,
-			    (void*)ag, p) != APR_SUCCESS ) {
-      ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s, "mod_ag: failed to initialise") ;
-      return 500 ;
+    // This code is used to prevent double initialization of the module during Apache startup
+    apr_pool_userdata_get(&data, userdata_key, s->process->pool);
+    if ( data == NULL ) {
+        apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
+        return OK;
     }
-    apr_pool_cleanup_register(p, ag->dbpool,
-			      (void*)apr_reslist_destroy,
-			      apr_pool_cleanup_null) ;
-    /*
-     * XXX: If no new connection could be opened, the reslist will not
-     * contain any resources and reslist_create will fail, giving 
-     * val->pool the value NULL and making it unusable. The configuration 
-     * set is not really recoverable in this case. For now we log this condition
-     * and the authentication functions protect themselves against this 
-     * condition. A much better way would be to free the configuration
-     * set completely. But to do this other changes are necessary, so for
-     * now this is basically a workaround. This has to be fixed before
-     * 1.0 
-     */
-    apr_hash_set(ag_pool_config, key, APR_HASH_KEY_STRING, ag);
 
-  }
-  return OK ;
+    for (idx = apr_hash_first(p, ag_pool_config); idx; idx = apr_hash_next(idx)) {
+
+        apr_hash_this(idx, (void *) &key, &len, (void *) &ag);
+
+        if ( apr_reslist_create(&ag->dbpool,
+                                ag->nmin,
+                                ag->nkeep,
+                                ag->nmax,
+                                ag->exptime,
+                                ag_pool_construct,
+                                ag_pool_destruct,
+                                (void*)ag, p) != APR_SUCCESS ) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s, "mod_ag: failed to initialise") ;
+            return 500 ;
+        }
+        apr_pool_cleanup_register(p, ag->dbpool,
+                                  (void*)apr_reslist_destroy,
+                                  apr_pool_cleanup_null) ;
+        /*
+         * XXX: If no new connection could be opened, the reslist will not
+         * contain any resources and reslist_create will fail, giving
+         * val->pool the value NULL and making it unusable. The configuration
+         * set is not really recoverable in this case. For now we log this condition
+         * and the authentication functions protect themselves against this
+         * condition. A much better way would be to free the configuration
+         * set completely. But to do this other changes are necessary, so for
+         * now this is basically a workaround. This has to be fixed before
+         * 1.0
+         */
+        apr_hash_set(ag_pool_config, key, APR_HASH_KEY_STRING, ag);
+
+    }
+    return OK ;
 }
 
 
 /* Functions we export for modules to use:
-	- open acquires a connection from the pool (opens one if necessary)
-	- close releases it back in to the pool
+   - open acquires a connection from the pool (opens one if necessary)
+   - close releases it back in to the pool
 */
 PGconn* ag_pool_open(server_rec* s) {
-  PGconn* ret = NULL ;
-  ag_cfg* ag = (ag_cfg*)
-	ap_get_module_config(s->module_config, &ag_module) ;
-  apr_uint32_t acquired_cnt ;
+    PGconn* ret = NULL ;
+    ag_cfg* ag = (ag_cfg*)
+      ap_get_module_config(s->module_config, &ag_module) ;
+    apr_uint32_t acquired_cnt ;
 
-  //  __(s, " DBPOOL: %s", ag->dbpool == NULL ? "NULL" : "not NULL");
+    //  __(s, " DBPOOL: %s", ag->dbpool == NULL ? "NULL" : "not NULL");
   
-  if (ag->dbpool == NULL) {
-    ag = apr_hash_get(ag_pool_config, ag->key, APR_HASH_KEY_STRING);
-  }
-  if ( apr_reslist_acquire(ag->dbpool, (void**)&ret) != APR_SUCCESS ) {
-    ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_ag: Failed to acquire PgSQL connection from pool!") ;
-    return NULL ;
-  }
-  if (PQstatus(ret) != CONNECTION_OK) {
-    PQreset(ret);
-    if (PQstatus(ret) != CONNECTION_OK) {
-      ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
-	"PgSQL Error: %s", PQerrorMessage(ret) ) ;
-      apr_reslist_release(ag->dbpool, ret) ;
-      return NULL ;
+    if (ag->dbpool == NULL) {
+        ag = apr_hash_get(ag_pool_config, ag->key, APR_HASH_KEY_STRING);
     }
-  }
-  if (ag->nkeep < (acquired_cnt = apr_reslist_acquired_count	( ag->dbpool	))) {
-    ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s, "mod_ag: %d connections in the %s pool acquired (%d,%d,%d)",
-		 acquired_cnt, ag->key, ag->nmin, ag->nkeep, ag->nmax
-		 ) ;
-  }
-  return ret ;
+    if ( apr_reslist_acquire(ag->dbpool, (void**)&ret) != APR_SUCCESS ) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s, "mod_ag: Failed to acquire PgSQL connection from pool!") ;
+        return NULL ;
+    }
+    if (PQstatus(ret) != CONNECTION_OK) {
+        PQreset(ret);
+        if (PQstatus(ret) != CONNECTION_OK) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                         "PgSQL Error: %s", PQerrorMessage(ret) ) ;
+            apr_reslist_release(ag->dbpool, ret) ;
+            return NULL ;
+        }
+    }
+    if (ag->nkeep < (acquired_cnt = apr_reslist_acquired_count	( ag->dbpool	))) {
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s, "mod_ag: %d connections in the %s pool acquired (%d,%d,%d)",
+                     acquired_cnt, ag->key, ag->nmin, ag->nkeep, ag->nmax
+                     ) ;
+    }
+    return ret ;
 }
 
 void ag_pool_close(server_rec* s, PGconn* sql) {
-  ag_cfg* ag = (ag_cfg*)
-	ap_get_module_config(s->module_config, &ag_module) ;
-  if (ag->dbpool == NULL) {
-    ag = apr_hash_get(ag_pool_config, ag->key, APR_HASH_KEY_STRING);
-  }
-  apr_reslist_release(ag->dbpool, sql) ;
+    ag_cfg* ag = (ag_cfg*)
+      ap_get_module_config(s->module_config, &ag_module) ;
+    if (ag->dbpool == NULL) {
+        ag = apr_hash_get(ag_pool_config, ag->key, APR_HASH_KEY_STRING);
+    }
+    apr_reslist_release(ag->dbpool, sql) ;
 }
 
 
 /* Export the form data we've parsed */
 apr_table_t* upload_form(request_rec* r) {
-  return (apr_table_t*)
-	ap_get_module_config(r->request_config, &ag_module);
+    return (apr_table_t*)
+      ap_get_module_config(r->request_config, &ag_module);
 }
 
 
@@ -727,14 +728,14 @@ static int tab_cb(void *data, const char *key, const char *value) {
     return TRUE;/* TRUE:continue iteration. FALSE:stop iteration */
 }
 static int tab_args(void *data, const char *key, const char *value) {
-  params_t *params = (params_t*) data;
-  const char *encoded_value = apr_pescape_urlencoded(params->r->pool, value);
-  if (params->args) {
-    params->args = apr_pstrcat(params->r->pool, params->args, "&", key, "=", apr_pescape_urlencoded(params->r->pool, value), NULL);
-  } else {
-    params->args = apr_pstrcat(params->r->pool, key, "=", apr_pescape_urlencoded(params->r->pool, value), NULL);
-  }
-  return TRUE;/* TRUE:continue iteration. FALSE:stop iteration */
+    params_t *params = (params_t*) data;
+    const char *encoded_value = apr_pescape_urlencoded(params->r->pool, value);
+    if (params->args) {
+        params->args = apr_pstrcat(params->r->pool, params->args, "&", key, "=", apr_pescape_urlencoded(params->r->pool, value), NULL);
+    } else {
+        params->args = apr_pstrcat(params->r->pool, key, "=", apr_pescape_urlencoded(params->r->pool, value), NULL);
+    }
+    return TRUE;/* TRUE:continue iteration. FALSE:stop iteration */
 }
 
 
@@ -742,745 +743,745 @@ static int tab_args(void *data, const char *key, const char *value) {
 
 static int ag_handler (request_rec * r)
 {
-   char *cursor_string;
-   apr_table_t * GET = NULL, *GETargs = NULL, *NEW = NULL;
-   apr_array_header_t * POST;
-   ag_cfg* config = (ag_cfg*) ap_get_module_config(r->server->module_config, &ag_module ) ;
-   ag_dir_cfg* upload_config = (ag_dir_cfg*) ap_get_module_config(r->per_dir_config, &ag_module ) ;
-   char * requested_file;
-   PGconn * pgc;
-   PGresult * pgr;
-   int i, j, filename_length = 0;
-   int field_count, tuple_count;
-   int end = 0;
-   const char * request_args = NULL;
-   const char* ctype = apr_table_get(r->headers_in, "Content-Type") ;
-   apr_off_t request_size;
-   apr_bucket *b;
-   apr_bucket_brigade *bb;
-   apr_status_t status;
-   char error_buf[1024];
-   apr_size_t bytes, count = 0;
-   const char *buf;
-   char *temp_filename = NULL;
-   char *basename;
-   params_t params;
-   apr_array_header_t *pathelts;
+    char *cursor_string;
+    apr_table_t * GET = NULL, *GETargs = NULL, *NEW = NULL;
+    apr_array_header_t * POST;
+    ag_cfg* config = (ag_cfg*) ap_get_module_config(r->server->module_config, &ag_module ) ;
+    ag_dir_cfg* upload_config = (ag_dir_cfg*) ap_get_module_config(r->per_dir_config, &ag_module ) ;
+    char * requested_file;
+    PGconn * pgc;
+    PGresult * pgr;
+    int i, j, filename_length = 0;
+    int field_count, tuple_count;
+    int end = 0;
+    const char * request_args = NULL;
+    const char* ctype = apr_table_get(r->headers_in, "Content-Type") ;
+    apr_off_t request_size;
+    apr_bucket *b;
+    apr_bucket_brigade *bb;
+    apr_status_t status;
+    char error_buf[1024];
+    apr_size_t bytes, count = 0;
+    const char *buf;
+    char *temp_filename = NULL;
+    char *basename;
+    params_t params;
+    apr_array_header_t *pathelts;
 
-   /* PQexecParams doesn't seem to like zero-length strings, so we feed it a dummy */
-   const char * dummy_get = "nothing";
-   const char * dummy_user = "nobody";
+    /* PQexecParams doesn't seem to like zero-length strings, so we feed it a dummy */
+    const char * dummy_get = "nothing";
+    const char * dummy_user = "nobody";
 
-   const char * cursor_values[258] = { r -> args ? apr_pstrdup(r->pool, r->args) : dummy_get, r->user ? r->user : dummy_user };
-   int cursor_value_lengths[258] = { strlen(cursor_values[0]), strlen(cursor_values[1]) };
-   int cursor_value_formats[258] = { 0 };
+    const char * cursor_values[258] = { r -> args ? apr_pstrdup(r->pool, r->args) : dummy_get, r->user ? r->user : dummy_user };
+    int cursor_value_lengths[258] = { strlen(cursor_values[0]), strlen(cursor_values[1]) };
+    int cursor_value_formats[258] = { 0 };
 
-   //   __(r->server, " HANDLER: %s", (r->handler) ? r->handler : "<null>");
-   //   __(r->server, " METHOD: %s", (r->method) ? r->method : "<null>");
+    //   __(r->server, " HANDLER: %s", (r->handler) ? r->handler : "<null>");
+    //   __(r->server, " METHOD: %s", (r->method) ? r->method : "<null>");
    
-   if (!r -> handler || strcmp (r -> handler, "ag-handler") ) return DECLINED;
-   //    __(r->server, " ** AG HANDLER");
+    if (!r -> handler || strcmp (r -> handler, "ag-handler") ) return DECLINED;
+    //    __(r->server, " ** AG HANDLER");
 		
-   if (!r -> method || (strcmp (r -> method, "GET") && strcmp (r -> method, "POST")) ) return DECLINED;
+    if (!r -> method || (strcmp (r -> method, "GET") && strcmp (r -> method, "POST")) ) return DECLINED;
 
-   //   __(r->server, " ENABLED: %s", (config->is_enabled == true) ? "true" : "false");
+    //   __(r->server, " ENABLED: %s", (config->is_enabled == true) ? "true" : "false");
    
-   //   if (config->is_enabled != true) return OK; /* pretending we have responded, may return DECLINED in the future */
+    //   if (config->is_enabled != true) return OK; /* pretending we have responded, may return DECLINED in the future */
 
-   if (ctype && !strncmp ( ctype , "multipart/form-data", 19 ) ) {
+    if (ctype && !strncmp ( ctype , "multipart/form-data", 19 ) ) {
 
-     bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
-     do {
-       status = ap_get_brigade(r->input_filters, bb, AP_MODE_READBYTES, APR_BLOCK_READ, BUFLEN);
-       if (status == APR_SUCCESS) {
-	 for (b = APR_BRIGADE_FIRST(bb);
-	      b != APR_BRIGADE_SENTINEL(bb);
-	      b = APR_BUCKET_NEXT(b) ) {
-	   if (APR_BUCKET_IS_EOS(b)) {
-	     end = 1;
-	     break;
-	   } else if (APR_BUCKET_IS_METADATA(b)) {
-	     continue;
-	   } else if (APR_SUCCESS == apr_bucket_read(b, &buf, &bytes, APR_BLOCK_READ)) {
-	     char *x = apr_pstrndup(r->pool, buf, bytes);
-	     if (temp_filename != NULL)
-	       temp_filename = apr_pstrcat(r->pool, temp_filename, x, NULL);
-	     else
-	       temp_filename = x;
-	     count += bytes;
-	   } else {
-	     __(r->server, "READ tmpfilename READ BUCKET ERROR");
-	   }
-	 }
-       } else
-	 ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "Brigade error");
-       apr_brigade_cleanup(bb);
-     } while (!end && (status == APR_SUCCESS));
+        bb = apr_brigade_create(r->pool, r->connection->bucket_alloc);
+        do {
+            status = ap_get_brigade(r->input_filters, bb, AP_MODE_READBYTES, APR_BLOCK_READ, BUFLEN);
+            if (status == APR_SUCCESS) {
+                for (b = APR_BRIGADE_FIRST(bb);
+                     b != APR_BRIGADE_SENTINEL(bb);
+                     b = APR_BUCKET_NEXT(b) ) {
+                    if (APR_BUCKET_IS_EOS(b)) {
+                        end = 1;
+                        break;
+                    } else if (APR_BUCKET_IS_METADATA(b)) {
+                        continue;
+                    } else if (APR_SUCCESS == apr_bucket_read(b, &buf, &bytes, APR_BLOCK_READ)) {
+                        char *x = apr_pstrndup(r->pool, buf, bytes);
+                        if (temp_filename != NULL)
+                            temp_filename = apr_pstrcat(r->pool, temp_filename, x, NULL);
+                        else
+                            temp_filename = x;
+                        count += bytes;
+                    } else {
+                        __(r->server, "READ tmpfilename READ BUCKET ERROR");
+                    }
+                }
+            } else
+                ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server, "Brigade error");
+            apr_brigade_cleanup(bb);
+        } while (!end && (status == APR_SUCCESS));
 
-     if (status != APR_SUCCESS) {
-       ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error reading post input filters bucket brigade");
-       ap_rprintf(r, "<p>Error reading request body after input filters.</p>");
-       return OK;
-     }
-     GET = upload_form(r);
-     //     if (NULL != GET) apr_table_do(tab_cb, r->server, GET, NULL);
+        if (status != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error reading post input filters bucket brigade");
+            ap_rprintf(r, "<p>Error reading request body after input filters.</p>");
+            return OK;
+        }
+        GET = upload_form(r);
+        //     if (NULL != GET) apr_table_do(tab_cb, r->server, GET, NULL);
 
-     {
-       char *dirname = apr_pstrcat(r->pool,
-				   (upload_config->dir_field != NULL) ? upload_config->dir_field : "/tmp",
-				   "/",
-				   apr_table_get(GET, (upload_config->folder_field != NULL) ? upload_config->folder_field : "p_folder"),
-				   NULL);
-       char *filename = apr_pstrcat(r->pool,
-				   dirname,
-				   "/",
-				   apr_table_get(GET, (upload_config->file_field != NULL) ? upload_config->file_field : "p_file"),
-				   NULL);
-       if (APR_SUCCESS != (status = apr_dir_make_recursive(dirname,
-							   APR_UREAD | APR_UWRITE | APR_UEXECUTE |
-							   APR_GREAD | APR_GEXECUTE | APR_WREAD | APR_WEXECUTE,
-							   r->pool))) {
-	 ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error making recursive directory %s -- %s", dirname,
-		      apr_strerror(status, error_buf, sizeof(error_buf)));
-	 return DECLINED;
-       }
-       if (APR_SUCCESS != (status = apr_file_rename(temp_filename, filename, r->pool))) {
-	 ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error renaming %s into %s -- %s",
-		      temp_filename, filename, apr_strerror(status, error_buf, sizeof(error_buf)));
-	 return DECLINED;
-       }
-       if (APR_SUCCESS != (status = apr_file_perms_set(filename, UPLOADED_PERMS))) {
-	 ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error changing permissions for %s -- %s",
-		      filename, apr_strerror(status, error_buf, sizeof(error_buf)));
-	 return DECLINED;
-       }
-     }
-   }
+        {
+            char *dirname = apr_pstrcat(r->pool,
+                                        (upload_config->dir_field != NULL) ? upload_config->dir_field : "/tmp",
+                                        "/",
+                                        apr_table_get(GET, (upload_config->folder_field != NULL) ? upload_config->folder_field : "p_folder"),
+                                        NULL);
+            char *filename = apr_pstrcat(r->pool,
+                                         dirname,
+                                         "/",
+                                         apr_table_get(GET, (upload_config->file_field != NULL) ? upload_config->file_field : "p_file"),
+                                         NULL);
+            if (APR_SUCCESS != (status = apr_dir_make_recursive(dirname,
+                                                                APR_UREAD | APR_UWRITE | APR_UEXECUTE |
+                                                                APR_GREAD | APR_GEXECUTE | APR_WREAD | APR_WEXECUTE,
+                                                                r->pool))) {
+                ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error making recursive directory %s -- %s", dirname,
+                             apr_strerror(status, error_buf, sizeof(error_buf)));
+                return DECLINED;
+            }
+            if (APR_SUCCESS != (status = apr_file_rename(temp_filename, filename, r->pool))) {
+                ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error renaming %s into %s -- %s",
+                             temp_filename, filename, apr_strerror(status, error_buf, sizeof(error_buf)));
+                return DECLINED;
+            }
+            if (APR_SUCCESS != (status = apr_file_perms_set(filename, UPLOADED_PERMS))) {
+                ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error changing permissions for %s -- %s",
+                             filename, apr_strerror(status, error_buf, sizeof(error_buf)));
+                return DECLINED;
+            }
+        }
+    }
 
-   ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " r->path_info: %s", r->path_info);
-   //   ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " r->filename: %s", r->filename);
-   pathelts = NULL;
-   if (APR_SUCCESS != (status = apr_filepath_list_split_impl(&pathelts, r->path_info + 1, '/', r->pool))) {
-     ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error parsing path_info %s -- %s",
-		  r->path_info, apr_strerror(status, error_buf, sizeof(error_buf)));
-     return DECLINED;
-   }
+    ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " r->path_info: %s", r->path_info);
+    //   ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " r->filename: %s", r->filename);
+    pathelts = NULL;
+    if (APR_SUCCESS != (status = apr_filepath_list_split_impl(&pathelts, r->path_info + 1, '/', r->pool))) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error parsing path_info %s -- %s",
+                     r->path_info, apr_strerror(status, error_buf, sizeof(error_buf)));
+        return DECLINED;
+    }
 
-   if (pathelts->nelts > 256) {
-     ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "Too many subdirectories in path_info %s -- %d (max:256)",
-		  r->path_info, pathelts->nelts);
-     return DECLINED;
-   }
+    if (pathelts->nelts > 256) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "Too many subdirectories in path_info %s -- %d (max:256)",
+                     r->path_info, pathelts->nelts);
+        return DECLINED;
+    }
    
-   for (i = 0; i < pathelts->nelts; i++) {
-     ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " elts[%d]: %s", i, ((char**)pathelts->elts)[i]);
-     if (i) {
-       cursor_values[1+i] = ((char**)pathelts->elts)[i];
-       cursor_value_lengths[1+i] = strlen(cursor_values[1+i]);
-     }
-   }
+    for (i = 0; i < pathelts->nelts; i++) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, " elts[%d]: %s", i, ((char**)pathelts->elts)[i]);
+        if (i) {
+            cursor_values[1+i] = ((char**)pathelts->elts)[i];
+            cursor_value_lengths[1+i] = strlen(cursor_values[1+i]);
+        }
+    }
    
-   //   requested_file = apr_pstrdup (r -> pool, r -> path_info /*filename*/);
-   requested_file = apr_pstrdup (r -> pool, ((char**)pathelts->elts)[0]);
-   i = strlen(requested_file) - 1;
+    //   requested_file = apr_pstrdup (r -> pool, r -> path_info /*filename*/);
+    requested_file = apr_pstrdup (r -> pool, ((char**)pathelts->elts)[0]);
+    i = strlen(requested_file) - 1;
 
-   while (i > 0)
-   {
-     if (requested_file[i] == '.') filename_length = i;
-      if (requested_file[i] == '/') break;
-      i--;
-   }
+    while (i > 0)
+      {
+          if (requested_file[i] == '.') filename_length = i;
+          if (requested_file[i] == '/') break;
+          i--;
+      }
 
-   if (i >= 0) {
-     requested_file += i; /* now pointing to foo.ag instead of /var/www/.../foo.ag */
-     if (filename_length > i) filename_length -= i;
-   }
+    if (i >= 0) {
+        requested_file += i; /* now pointing to foo.ag instead of /var/www/.../foo.ag */
+        if (filename_length > i) filename_length -= i;
+    }
 
-   if (filename_length == 0) {
-     basename = requested_file;
-   } else {
-     basename = apr_pstrndup(r->pool, requested_file, filename_length); 
-   }
+    if (filename_length == 0) {
+        basename = requested_file;
+    } else {
+        basename = apr_pstrndup(r->pool, requested_file, filename_length);
+    }
 
-   ap_args_to_table(r, &GETargs);
-   if (OK != ap_parse_form_data(r, NULL, &POST, -1, (~((apr_size_t)0)))) {
-     __(r->server, " ** ap_parse_form_data is NOT OK");
-   }
-   GET = (NULL == GET) ? GETargs : apr_table_overlay(r->pool, GETargs, GET);
+    ap_args_to_table(r, &GETargs);
+    if (OK != ap_parse_form_data(r, NULL, &POST, -1, (~((apr_size_t)0)))) {
+        __(r->server, " ** ap_parse_form_data is NOT OK");
+    }
+    GET = (NULL == GET) ? GETargs : apr_table_overlay(r->pool, GETargs, GET);
 
-   //      apr_table_do(tab_cb, r->server, GET, NULL);
-   //      __(r->server, " && request_args: %s", request_args);
+    //      apr_table_do(tab_cb, r->server, GET, NULL);
+    //      __(r->server, " && request_args: %s", request_args);
    
-   // move all POST parameters into GET table
-   {
-     ap_form_pair_t *pair;
-     char *buffer;
-     apr_off_t len;
-     apr_size_t size;
-     while (NULL != (pair = apr_array_pop(POST))) {
-       apr_brigade_length(pair->value, 1, &len);
-       size = (apr_size_t) len;
-       buffer = apr_palloc(r->pool, size + 1);
-       apr_brigade_flatten(pair->value, buffer, &size);
-       buffer[len] = 0;
-       apr_table_setn(GET, apr_pstrdup(r->pool, pair->name), buffer); //should name and value be ap_unescape_url() -ed?
-       //       __(r->server, "POST[%s]: %s", pair->name, buffer);
-     }
-   }
+    // move all POST parameters into GET table
+    {
+        ap_form_pair_t *pair;
+        char *buffer;
+        apr_off_t len;
+        apr_size_t size;
+        while (NULL != (pair = apr_array_pop(POST))) {
+            apr_brigade_length(pair->value, 1, &len);
+            size = (apr_size_t) len;
+            buffer = apr_palloc(r->pool, size + 1);
+            apr_brigade_flatten(pair->value, buffer, &size);
+            buffer[len] = 0;
+            apr_table_setn(GET, apr_pstrdup(r->pool, pair->name), buffer); //should name and value be ap_unescape_url() -ed?
+            //       __(r->server, "POST[%s]: %s", pair->name, buffer);
+        }
+    }
 
-   params.r = r;
-   params.args = NULL;
-   apr_table_do(tab_args, &params, GET, NULL);
-   params.args = apr_pstrcat(r->pool, "&", params.args, "&", NULL);
+    params.r = r;
+    params.args = NULL;
+    apr_table_do(tab_args, &params, GET, NULL);
+    params.args = apr_pstrcat(r->pool, "&", params.args, "&", NULL);
 
-   //   __(r->server, " && params args: %s", params.args);
+    //   __(r->server, " && params args: %s", params.args);
 
-   cursor_values[0] = params.args;
-   cursor_value_lengths[0] = strlen(cursor_values[0]);
+    cursor_values[0] = params.args;
+    cursor_value_lengths[0] = strlen(cursor_values[0]);
 
-   /* set response content type according to configuration or to default value */
-   ap_set_content_type(r, upload_config->content_type_set ? upload_config->content_type : "text/html");
+    /* set response content type according to configuration or to default value */
+    ap_set_content_type(r, upload_config->content_type_set ? upload_config->content_type : "text/html");
 
-   /* now connecting to Postgres, getting function output, and printing it */
+    /* now connecting to Postgres, getting function output, and printing it */
 
-   pgc = ag_pool_open (r->server);
+    pgc = ag_pool_open (r->server);
 
-   if (PQstatus(pgc) != CONNECTION_OK)
-   {
-      spit_pg_error_syslog ("connect");
-      ag_pool_close(r->server, pgc);
-      return OK;
-   }
+    if (PQstatus(pgc) != CONNECTION_OK)
+      {
+          spit_pg_error_syslog ("connect");
+          ag_pool_close(r->server, pgc);
+          return OK;
+      }
 
-   if (config->ServerName == NULL) {
-     char *update_command;
-     struct utsname node;
-     config->ServerName = apr_pstrdup(config->pool, r->server->server_hostname);
-     /*
-     update_command = apr_psprintf(r->pool, "UPDATE system_parameters SET string_value='%s', integer_value=%ld WHERE id=2", config->ServerName, gethostid());
+    if (config->ServerName == NULL) {
+        char *update_command;
+        struct utsname node;
+        config->ServerName = apr_pstrdup(config->pool, r->server->server_hostname);
+        /*
+          update_command = apr_psprintf(r->pool, "UPDATE system_parameters SET string_value='%s', integer_value=%ld WHERE id=2", config->ServerName, gethostid());
 
-     pgr = PQexec (pgc, update_command);
-     if (PQresultStatus(pgr) != PGRES_COMMAND_OK) {
-       spit_pg_error_syslog ("update system_parameters id=2");
-       return clean_up_connection(r->server);
-     }
-     PQclear (pgr);
+          pgr = PQexec (pgc, update_command);
+          if (PQresultStatus(pgr) != PGRES_COMMAND_OK) {
+          spit_pg_error_syslog ("update system_parameters id=2");
+          return clean_up_connection(r->server);
+          }
+          PQclear (pgr);
 
-     if (0 == uname(&node)) {
-       update_command = apr_psprintf(r->pool, "UPDATE system_parameters SET string_value='%s', integer_value=%ld WHERE id=6", node.nodename, gethostid());
-       pgr = PQexec (pgc, update_command);
-       if (PQresultStatus(pgr) != PGRES_COMMAND_OK) {
-	 spit_pg_error_syslog ("update system_parameters id=6");
-	 return clean_up_connection(r->server);
-       }
-       PQclear (pgr);
-     } else {
-       update_command = apr_psprintf(r->pool, "uname() failed, %d -- %s; node_name is not updated", errno, strerror(errno));
-       spit_pg_error_syslog (update_command);
-     }
-     */
-   }
+          if (0 == uname(&node)) {
+          update_command = apr_psprintf(r->pool, "UPDATE system_parameters SET string_value='%s', integer_value=%ld WHERE id=6", node.nodename, gethostid());
+          pgr = PQexec (pgc, update_command);
+          if (PQresultStatus(pgr) != PGRES_COMMAND_OK) {
+          spit_pg_error_syslog ("update system_parameters id=6");
+          return clean_up_connection(r->server);
+          }
+          PQclear (pgr);
+          } else {
+          update_command = apr_psprintf(r->pool, "uname() failed, %d -- %s; node_name is not updated", errno, strerror(errno));
+          spit_pg_error_syslog (update_command);
+          }
+        */
+    }
 
-   /* removing extention (.ag or other) from file name, and adding "ag_" for function name, i.e. foo.ag becomes ag_foo() */
-   cursor_string = apr_psprintf(r -> pool,
-				"select * from ag_%s($1::varchar, (select id from _ag_um_users where username=$2), ARRAY[",
-				basename);
+    /* removing extention (.ag or other) from file name, and adding "ag_" for function name, i.e. foo.ag becomes ag_foo() */
+    cursor_string = apr_psprintf(r -> pool,
+                                 "select * from ag_%s($1::varchar, (select id from _ag_um_users where username=$2), ARRAY[",
+                                 basename);
    
-   for (i = 1; i < pathelts->nelts; i++) {
-     cursor_string = apr_pstrcat(r->pool, cursor_string,
-				 (i > 1) ? "," : apr_psprintf(r->pool, "$%d", i + 2),
-				 (i > 1) ? apr_psprintf(r->pool, "$%d", i + 2) : NULL,
-				 NULL);
-   }
+    for (i = 1; i < pathelts->nelts; i++) {
+        cursor_string = apr_pstrcat(r->pool, cursor_string,
+                                    (i > 1) ? "," : apr_psprintf(r->pool, "$%d", i + 2),
+                                    (i > 1) ? apr_psprintf(r->pool, "$%d", i + 2) : NULL,
+                                    NULL);
+    }
 
-   cursor_string = apr_pstrcat(r->pool, cursor_string, "]::text[])", NULL);
+    cursor_string = apr_pstrcat(r->pool, cursor_string, "]::text[])", NULL);
    
      
-   /* passing GET as first (and only) parameter */
-   if (0 == PQsendQueryParams (pgc, cursor_string, 1 + pathelts->nelts, NULL, cursor_values, cursor_value_lengths, cursor_value_formats, 0)) {
-      spit_pg_error_syslog ("sending async query with params");
-      return clean_up_connection(r->server);
-   }
+    /* passing GET as first (and only) parameter */
+    if (0 == PQsendQueryParams (pgc, cursor_string, 1 + pathelts->nelts, NULL, cursor_values, cursor_value_lengths, cursor_value_formats, 0)) {
+        spit_pg_error_syslog ("sending async query with params");
+        return clean_up_connection(r->server);
+    }
 
-   if (0 == PQsetSingleRowMode(pgc)) {
-     ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server, "can not fall into single raw mode to fetch data");
-   }
+    if (0 == PQsetSingleRowMode(pgc)) {
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, r->server, "can not fall into single raw mode to fetch data");
+    }
    
-   while (NULL != (pgr = PQgetResult(pgc))) {
+    while (NULL != (pgr = PQgetResult(pgc))) {
 
-     if (PQresultStatus(pgr) != PGRES_TUPLES_OK && PQresultStatus(pgr) != PGRES_SINGLE_TUPLE) {
-       spit_pg_error_syslog ("fetch data");
-       return clean_up_connection(r->server);
-     }
+        if (PQresultStatus(pgr) != PGRES_TUPLES_OK && PQresultStatus(pgr) != PGRES_SINGLE_TUPLE) {
+            spit_pg_error_syslog ("fetch data");
+            return clean_up_connection(r->server);
+        }
 
-     /* the following counts and for-loop may seem excessive as it's just 1 row/1 field, but might need it in the future */
+        /* the following counts and for-loop may seem excessive as it's just 1 row/1 field, but might need it in the future */
 
-     field_count = PQnfields(pgr);
-     tuple_count = PQntuples(pgr);
+        field_count = PQnfields(pgr);
+        tuple_count = PQntuples(pgr);
 
-     for (i = 0; i < tuple_count; i++)
-       {
-	 for (j = 0; j < field_count; j++) ap_rprintf(r, "%s", PQgetvalue(pgr, i, j));
-	 ap_rprintf(r, "\n");
-       }
-     PQclear (pgr);
-   }
-   ag_pool_close(r->server, pgc);
+        for (i = 0; i < tuple_count; i++)
+          {
+              for (j = 0; j < field_count; j++) ap_rprintf(r, "%s", PQgetvalue(pgr, i, j));
+              ap_rprintf(r, "\n");
+          }
+        PQclear (pgr);
+    }
+    ag_pool_close(r->server, pgc);
 
-   return OK;
+    return OK;
 }
 
 static apr_status_t init_db_pool(apr_pool_t* p, apr_pool_t* plog, apr_pool_t* ptemp) {
-  apr_status_t rc = APR_SUCCESS;
+    apr_status_t rc = APR_SUCCESS;
 
-  rhash_library_init();
-  ag_pool_config = apr_hash_make(p);
-  return rc;
+    rhash_library_init();
+    ag_pool_config = apr_hash_make(p);
+    return rc;
 }
 
 
 static void tmpfile_cleanup(apr_file_t *tmpfile) {
-  apr_finfo_t tinfo;
+    apr_finfo_t tinfo;
 
-  apr_file_datasync(tmpfile) ;
-  if (APR_SUCCESS == apr_file_info_get(&tinfo, APR_FINFO_SIZE, tmpfile)) {
-    apr_file_trunc(tmpfile, tinfo.size - 2); /* remove extra \r\n */
-  }
+    apr_file_datasync(tmpfile) ;
+    if (APR_SUCCESS == apr_file_info_get(&tinfo, APR_FINFO_SIZE, tmpfile)) {
+        apr_file_trunc(tmpfile, tinfo.size - 2); /* remove extra \r\n */
+    }
 
-  apr_file_close(tmpfile) ;
+    apr_file_close(tmpfile) ;
 }
 
 
 
 static apr_status_t tmpfile_filter(ap_filter_t *f, apr_bucket_brigade *bbout,
-	ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes) {
+                                   ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes) {
 
-  ag_dir_cfg *config = (ag_dir_cfg*) ap_get_module_config(f->r->per_dir_config, &ag_module);
-  apr_bucket_brigade* bbin = apr_brigade_create(f->r->pool, f->r->connection->bucket_alloc);
-  apr_file_t* tmpfile = NULL;
-  const char* ctype = apr_table_get(f->r->headers_in, "Content-Type") ;
-  const char* cl_header = apr_table_get(f->r->headers_in, "Content-Length");
-  char* tmpname = apr_pstrcat(f->r->pool,
-			      (config->dir_field != NULL) ? config->dir_field : "/tmp",
-			      "/mod-ag.XXXXXX", NULL) ;
-  apr_off_t readbytes = (cl_header) ? (apr_off_t) apr_atoi64(cl_header) : BUFLEN;
+    ag_dir_cfg *config = (ag_dir_cfg*) ap_get_module_config(f->r->per_dir_config, &ag_module);
+    apr_bucket_brigade* bbin = apr_brigade_create(f->r->pool, f->r->connection->bucket_alloc);
+    apr_file_t* tmpfile = NULL;
+    const char* ctype = apr_table_get(f->r->headers_in, "Content-Type") ;
+    const char* cl_header = apr_table_get(f->r->headers_in, "Content-Length");
+    char* tmpname = apr_pstrcat(f->r->pool,
+                                (config->dir_field != NULL) ? config->dir_field : "/tmp",
+                                "/mod-ag.XXXXXX", NULL) ;
+    apr_off_t readbytes = (cl_header) ? (apr_off_t) apr_atoi64(cl_header) : BUFLEN;
 
 #if defined DEBUG
-  ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "tmpfile_filter: cl_header:%s  readbytes:%lu  nbytes:%lu", cl_header, readbytes, nbytes) ;
+    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "tmpfile_filter: cl_header:%s  readbytes:%lu  nbytes:%lu", cl_header, readbytes, nbytes) ;
 #endif
 
-  if ( f->ctx ) {
-    APR_BRIGADE_INSERT_TAIL(bbout, apr_bucket_eos_create(bbout->bucket_alloc)) ;
-    return APR_SUCCESS ;
-  }
-  
-  for ( ; ; ) {
-    apr_bucket* b ;
-    const char* ptr = 0 ;
-    apr_size_t bytes ;
-#if defined DEBUG
-    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "get_brigade") ;
-#endif
-    ap_get_brigade(f->next, bbin, AP_MODE_READBYTES, APR_BLOCK_READ, readbytes) ;
-
-    for ( b = APR_BRIGADE_FIRST(bbin) ;
-	  b != APR_BRIGADE_SENTINEL(bbin) && ! f->ctx ;
-	  b = APR_BUCKET_NEXT(b) ) {
-
-      if ( APR_BUCKET_IS_EOS(b) ) {
-	f->ctx = f ;	// just using it as a flag; any nonzero will do
-	if (NULL != tmpfile) apr_file_flush(tmpfile) ;
-	if (APR_SUCCESS != apr_brigade_puts(bbout, ap_filter_flush, f, tmpname)) {
-	  __(f->r->server, " SENDING tmpname FAILED!!!");
-	}
-	/*	apr_brigade_puts(bbout, ap_filter_flush, f, tmpname) ;*/
-	APR_BRIGADE_INSERT_TAIL(bbout,
-				apr_bucket_eos_create(bbout->bucket_alloc) ) ;
-      } else if ( APR_BUCKET_IS_METADATA(b) ) {
-	apr_bucket *metadata_bucket;
-	metadata_bucket = b;
-	b = APR_BUCKET_NEXT(b);
-	APR_BUCKET_REMOVE(metadata_bucket);
-	APR_BRIGADE_INSERT_TAIL(bbout, metadata_bucket);
-	if (b == APR_BRIGADE_SENTINEL(bbin)) break;
-      } else if ( apr_bucket_read(b, &ptr, &bytes, APR_BLOCK_READ)
-		  == APR_SUCCESS ) {
-#if defined DEBUG
-	ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "tmpfile_filter: %ld bytes in bucket", bytes) ;
-#endif
-	if (NULL == tmpfile) {
-	  if ( apr_file_mktemp(&tmpfile, tmpname, KEEPONCLOSE, f->r->pool) != APR_SUCCESS ) {
-	    // error
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "Can not create file %s", tmpname) ;
-	    ap_remove_input_filter(f) ;
-	  }
-	  apr_pool_cleanup_register(f->r->pool, tmpfile,
-				    (void*)tmpfile_cleanup, apr_pool_cleanup_null) ;
-
-	}
-	apr_file_write(tmpfile, ptr, &bytes) ;
-	apr_file_flush(tmpfile) ;
-      } else {
-	__(f->r->server, " apr_bucket_read != APR_SUCCESS");
-      }
-    }
     if ( f->ctx ) {
-      break ;
+        APR_BRIGADE_INSERT_TAIL(bbout, apr_bucket_eos_create(bbout->bucket_alloc)) ;
+        return APR_SUCCESS ;
     }
-    else
-	  apr_brigade_cleanup(bbin) ;
-  }
+  
+    for ( ; ; ) {
+        apr_bucket* b ;
+        const char* ptr = 0 ;
+        apr_size_t bytes ;
+#if defined DEBUG
+        ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "get_brigade") ;
+#endif
+        ap_get_brigade(f->next, bbin, AP_MODE_READBYTES, APR_BLOCK_READ, readbytes) ;
 
-  apr_brigade_destroy(bbin) ;
+        for ( b = APR_BRIGADE_FIRST(bbin) ;
+              b != APR_BRIGADE_SENTINEL(bbin) && ! f->ctx ;
+              b = APR_BUCKET_NEXT(b) ) {
 
-  return APR_SUCCESS ;
+            if ( APR_BUCKET_IS_EOS(b) ) {
+                f->ctx = f ;	// just using it as a flag; any nonzero will do
+                if (NULL != tmpfile) apr_file_flush(tmpfile) ;
+                if (APR_SUCCESS != apr_brigade_puts(bbout, ap_filter_flush, f, tmpname)) {
+                    __(f->r->server, " SENDING tmpname FAILED!!!");
+                }
+                /*	apr_brigade_puts(bbout, ap_filter_flush, f, tmpname) ;*/
+                APR_BRIGADE_INSERT_TAIL(bbout,
+                                        apr_bucket_eos_create(bbout->bucket_alloc) ) ;
+            } else if ( APR_BUCKET_IS_METADATA(b) ) {
+                apr_bucket *metadata_bucket;
+                metadata_bucket = b;
+                b = APR_BUCKET_NEXT(b);
+                APR_BUCKET_REMOVE(metadata_bucket);
+                APR_BRIGADE_INSERT_TAIL(bbout, metadata_bucket);
+                if (b == APR_BRIGADE_SENTINEL(bbin)) break;
+            } else if ( apr_bucket_read(b, &ptr, &bytes, APR_BLOCK_READ)
+                        == APR_SUCCESS ) {
+#if defined DEBUG
+                ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "tmpfile_filter: %ld bytes in bucket", bytes) ;
+#endif
+                if (NULL == tmpfile) {
+                    if ( apr_file_mktemp(&tmpfile, tmpname, KEEPONCLOSE, f->r->pool) != APR_SUCCESS ) {
+                        // error
+                        ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "Can not create file %s", tmpname) ;
+                        ap_remove_input_filter(f) ;
+                    }
+                    apr_pool_cleanup_register(f->r->pool, tmpfile,
+                                              (void*)tmpfile_cleanup, apr_pool_cleanup_null) ;
+
+                }
+                apr_file_write(tmpfile, ptr, &bytes) ;
+                apr_file_flush(tmpfile) ;
+            } else {
+                __(f->r->server, " apr_bucket_read != APR_SUCCESS");
+            }
+        }
+        if ( f->ctx ) {
+            break ;
+        }
+        else
+            apr_brigade_cleanup(bbin) ;
+    }
+
+    apr_brigade_destroy(bbin) ;
+
+    return APR_SUCCESS ;
 }
 
 
 static char* lccopy(apr_pool_t* p, const char* str) {
-  char* ret = apr_pstrdup(p, str) ;
-  char* q ;
-  for ( q = ret ; *q ; ++q )
-    if ( isupper(*q) )
-      *q = tolower(*q) ;
-  return ret ;
+    char* ret = apr_pstrdup(p, str) ;
+    char* q ;
+    for ( q = ret ; *q ; ++q )
+        if ( isupper(*q) )
+            *q = tolower(*q) ;
+    return ret ;
 }
 
 static char* get_boundary(apr_pool_t* p, const char* ctype) {
-  char* ret = NULL ;
-  if ( ctype ) {
-    char* lctype = lccopy(p, ctype) ;
-    char* bdy = strstr(lctype, "boundary") ;
-    if ( bdy ) {
-      char* ptr = strchr(bdy, '=') ;
-      if ( ptr ) {
-	bdy = (char*) ctype + ( ptr - lctype ) + 1 ;
-	for ( ptr = bdy; *ptr; ++ptr )
-	  if ( *ptr == ';' || isspace(*ptr) )
-	    *ptr = 0 ;
-	ret = apr_pstrdup(p, bdy) ;
-      }
+    char* ret = NULL ;
+    if ( ctype ) {
+        char* lctype = lccopy(p, ctype) ;
+        char* bdy = strstr(lctype, "boundary") ;
+        if ( bdy ) {
+            char* ptr = strchr(bdy, '=') ;
+            if ( ptr ) {
+                bdy = (char*) ctype + ( ptr - lctype ) + 1 ;
+                for ( ptr = bdy; *ptr; ++ptr )
+                    if ( *ptr == ';' || isspace(*ptr) )
+                        *ptr = 0 ;
+                ret = apr_pstrdup(p, bdy) ;
+            }
+        }
     }
-  }
-  return ret ;
+    return ret ;
 }
 
 static void set_header(upload_ctx* ctx, const char* data) {
-  char* colon = strchr(data, ':' ) ;
-  if ( colon ) {
-    *colon++ = 0 ;
-    while ( isspace(*colon) )
-      ++colon ;
-    if ( ! strcasecmp( data, "Content-Disposition" ) ) {
-      char* np = strstr(colon, "name=") ;
-      //      if ( np )
-      //	np = strstr(colon, "name=\"") ;
-      if ( np ) {
-	char* ep ;
-	np += 6 ;
-	ep = strchr(np, (int)'"') ;
-	if ( ep ) {
-	  //	  *ep = 0 ;
-	  ctx->key = apr_pstrndup(ctx->pool, np, ep-np) ;
-	  if ( ! strcasecmp(ctx->key, ctx->file_field) ) {
-	    char *fnp;
-	    //	    *ep = '"';
-	    fnp = strstr(colon, "filename=");
-	    //	    if ( fnp )
-	    //	      fnp = strstr(colon, "filename=\"");
-	    if (fnp) {
-	      char *ep;
-	      fnp += 10;
-	      ep = strchr(fnp, (int)'"') ;
-	      if (ep) {
-		//		*ep = 0;
-		ctx->val = apr_pstrndup(ctx->pool, fnp, ep - fnp) ;
-	      }
-	    }
+    char* colon = strchr(data, ':' ) ;
+    if ( colon ) {
+        *colon++ = 0 ;
+        while ( isspace(*colon) )
+            ++colon ;
+        if ( ! strcasecmp( data, "Content-Disposition" ) ) {
+            char* np = strstr(colon, "name=") ;
+            //      if ( np )
+            //	np = strstr(colon, "name=\"") ;
+            if ( np ) {
+                char* ep ;
+                np += 6 ;
+                ep = strchr(np, (int)'"') ;
+                if ( ep ) {
+                    //	  *ep = 0 ;
+                    ctx->key = apr_pstrndup(ctx->pool, np, ep-np) ;
+                    if ( ! strcasecmp(ctx->key, ctx->file_field) ) {
+                        char *fnp;
+                        //	    *ep = '"';
+                        fnp = strstr(colon, "filename=");
+                        //	    if ( fnp )
+                        //	      fnp = strstr(colon, "filename=\"");
+                        if (fnp) {
+                            char *ep;
+                            fnp += 10;
+                            ep = strchr(fnp, (int)'"') ;
+                            if (ep) {
+                                //		*ep = 0;
+                                ctx->val = apr_pstrndup(ctx->pool, fnp, ep - fnp) ;
+                            }
+                        }
 	    
-	    ctx->is_file = 1 ;
-	  }
-	}
-      }
+                        ctx->is_file = 1 ;
+                    }
+                }
+            }
+        }
     }
-  }
 }
 
 static void set_body(upload_ctx* ctx, const char* data) {
-  const char* cr = strchr(data, '\r') ;
-  char* tmp = apr_pstrndup(ctx->pool, data, cr-data) ;
-  if ( ctx->val )
-    ctx->val = apr_pstrcat(ctx->pool, ctx->val, tmp, NULL) ;
-  else
-    ctx->val = tmp ;
+    const char* cr = strchr(data, '\r') ;
+    char* tmp = apr_pstrndup(ctx->pool, data, cr-data) ;
+    if ( ctx->val )
+        ctx->val = apr_pstrcat(ctx->pool, ctx->val, tmp, NULL) ;
+    else
+        ctx->val = tmp ;
 }
 
 static enum { boundary_part, boundary_end, boundary_none }
-is_boundary( upload_ctx* ctx, const char* p) {
-    size_t blen = strlen(ctx->boundary) ;
-    if ( strlen(p) < 2 + blen )
-      return boundary_none ;
-    if ( ( p[0] != '-' ) || ( p[1] != '-' ) )
-      return boundary_none ;
-    if ( strncmp(ctx->boundary, p+2,  blen ) )
-      return boundary_none ;
-    if ( ( p[blen+2] == '-' ) && ( p[blen+3] == '-' ) )
-      return boundary_end ;
-    else
-      return boundary_part ;
-}
+  is_boundary( upload_ctx* ctx, const char* p) {
+      size_t blen = strlen(ctx->boundary) ;
+      if ( strlen(p) < 2 + blen )
+          return boundary_none ;
+      if ( ( p[0] != '-' ) || ( p[1] != '-' ) )
+          return boundary_none ;
+      if ( strncmp(ctx->boundary, p+2,  blen ) )
+          return boundary_none ;
+      if ( ( p[blen+2] == '-' ) && ( p[blen+3] == '-' ) )
+          return boundary_end ;
+      else
+          return boundary_part ;
+  }
 
 static void end_body(upload_ctx* ctx) {
-  if ( ! ctx->is_file ) {
-    apr_table_set(ctx->form, ctx->key, ctx->val) ;
-  }
-  else {
-    apr_table_set(ctx->form, ctx->key, ctx->val) ;
-    ctx->is_file = 0 ;
-  }
+    if ( ! ctx->is_file ) {
+        apr_table_set(ctx->form, ctx->key, ctx->val) ;
+    }
+    else {
+        apr_table_set(ctx->form, ctx->key, ctx->val) ;
+        ctx->is_file = 0 ;
+    }
 
-  ctx->key = ctx->val = 0 ;
+    ctx->key = ctx->val = 0 ;
 }
 
 
 static apr_status_t upload_filter_init(ap_filter_t* f) {
-  ag_dir_cfg* conf = (ag_dir_cfg*)ap_get_module_config(f->r->per_dir_config, &ag_module);
-  upload_ctx* ctx = apr_palloc(f->r->pool, sizeof(upload_ctx)) ;
-  // check content-type, get boundary or error
-  const char* ctype = apr_table_get(f->r->headers_in, "Content-Type") ;
+    ag_dir_cfg* conf = (ag_dir_cfg*)ap_get_module_config(f->r->per_dir_config, &ag_module);
+    upload_ctx* ctx = apr_palloc(f->r->pool, sizeof(upload_ctx)) ;
+    // check content-type, get boundary or error
+    const char* ctype = apr_table_get(f->r->headers_in, "Content-Type") ;
 
-  if ( ! ctype || ! conf->file_field ||
-	strncmp ( ctype , "multipart/form-data", 19 ) ) {
-    ap_remove_input_filter(f) ;
+    if ( ! ctype || ! conf->file_field ||
+         strncmp ( ctype , "multipart/form-data", 19 ) ) {
+        ap_remove_input_filter(f) ;
+        return APR_SUCCESS ;
+    }
+
+    ctx->pool = f->r->pool ;
+    ctx->server = f->r->server;
+    ctx->form = apr_table_make(ctx->pool, conf->form_size) ;
+    ctx->boundary = get_boundary(f->r->pool, ctype) ;
+    ctx->parse_state = p_none ;
+    ctx->key = ctx->val = 0 ;
+    ctx->file_field = conf->file_field ;
+    ctx->is_file = 0 ;
+    ctx->leftover = 0 ;
+
+    /* save the table in request_config */
+    ap_set_module_config(f->r->request_config, &ag_module, ctx->form) ;
+
+    f->ctx = ctx ;
     return APR_SUCCESS ;
-  }
-
-  ctx->pool = f->r->pool ;
-  ctx->server = f->r->server;
-  ctx->form = apr_table_make(ctx->pool, conf->form_size) ;
-  ctx->boundary = get_boundary(f->r->pool, ctype) ;
-  ctx->parse_state = p_none ;
-  ctx->key = ctx->val = 0 ;
-  ctx->file_field = conf->file_field ;
-  ctx->is_file = 0 ;
-  ctx->leftover = 0 ;
-
-  /* save the table in request_config */
-  ap_set_module_config(f->r->request_config, &ag_module, ctx->form) ;
-
-  f->ctx = ctx ;
-  return APR_SUCCESS ;
 }
 
 
 static apr_status_t upload_filter(ap_filter_t *f, apr_bucket_brigade *bbout,
-	ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes) {
+                                  ap_input_mode_t mode, apr_read_type_e block, apr_off_t nbytes) {
 
-  char* buf = 0 ;
-  char* p = buf ;
-  char* e ;
-  const char* cl_header = apr_table_get(f->r->headers_in, "Content-Length");
+    char* buf = 0 ;
+    char* p = buf ;
+    char* e ;
+    const char* cl_header = apr_table_get(f->r->headers_in, "Content-Length");
  
-  int ret = APR_SUCCESS ;
+    int ret = APR_SUCCESS ;
  
-  apr_size_t bytes = 0 ;
-  apr_off_t readbytes = (cl_header) ? (apr_off_t) apr_atoi64(cl_header) : nbytes;
-  apr_bucket* b ;
-  apr_bucket_brigade* bbin ;
+    apr_size_t bytes = 0 ;
+    apr_off_t readbytes = (cl_header) ? (apr_off_t) apr_atoi64(cl_header) : nbytes;
+    apr_bucket* b ;
+    apr_bucket_brigade* bbin ;
  
-  upload_ctx* ctx = (upload_ctx*) f->ctx ;
+    upload_ctx* ctx = (upload_ctx*) f->ctx ;
 
 #if defined DEBUG
-  ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: cl_header:%s  readbytes:%lu  nbytes:%lu", cl_header, readbytes, nbytes) ;
+    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: cl_header:%s  readbytes:%lu  nbytes:%lu", cl_header, readbytes, nbytes) ;
 #endif
 
     if ( ctx->parse_state == p_done ) {
-    // send an EOS
-    APR_BRIGADE_INSERT_TAIL(bbout, apr_bucket_eos_create(bbout->bucket_alloc) ) ;
-    return APR_SUCCESS ;
-  }
-
-  /* should be more efficient to do this in-place without resorting
-   * to a new brigade
-   */
-  bbin = apr_brigade_create(f->r->pool, f->r->connection->bucket_alloc) ;
-
-  if ( ret = ap_get_brigade(f->next, bbin, mode, block, readbytes) ,
-	ret != APR_SUCCESS )
-     return ret ;
-
-
-  for ( b = APR_BRIGADE_FIRST(bbin) ;
-	b != APR_BRIGADE_SENTINEL(bbin) ;
-	b = APR_BUCKET_NEXT(b) ) {
-    const char* ptr = buf ;
-    if ( APR_BUCKET_IS_EOS(b) ) {
-      ctx->parse_state = p_done ;
-      APR_BRIGADE_INSERT_TAIL(bbout,
-	 apr_bucket_eos_create(bbout->bucket_alloc) ) ;
-      apr_brigade_destroy(bbin) ;
-      return APR_SUCCESS ;
-    } else if ( apr_bucket_read(b, &ptr, &bytes, APR_BLOCK_READ)
-		== APR_SUCCESS ) {
-      const char* p = ptr ;
-#if defined DEBUG
-      ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: %ld bytes in bucket", bytes) ;
-#endif
-      if (ctx->leftover) {
-	apr_size_t new_bytes ;
-#if defined DEBUG
-	ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: leftover %ld bytes", ctx->leftsize) ;
-#endif
-	p = apr_pmemcat(f->r->pool, &new_bytes, ctx->leftover, ctx->leftsize, ptr, bytes, NULL) ;
-	ctx->leftover = NULL ;
-	ctx->leftsize = 0 ;
-	bytes = new_bytes ;
-	ptr = p;
-#if defined DEBUG
-	ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: new size %ld bytes", bytes) ;
-#endif
-      }
-      while ( e = memchr(p, (int)'\n', bytes - (p - ptr)), ( e && ( e < (ptr+bytes) ) ) ) {
-	const char* ptmp = p ;
-	apr_size_t ptmplen = (e - p);
-	int hasr = (ptmplen && ptmp[ptmplen - 1] == '\r') ? 1 : 0 ;
-	*e = 0 ;
-	if (hasr) ptmplen--,*(--e) = 0 ;
-	switch ( ctx->parse_state ) {
-	  case p_none:
-#if defined DEBUG
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_none") ;
-#endif
-	    if ( is_boundary(ctx, ptmp) == boundary_part )
-	      ctx->parse_state = p_head ;
-	    break ;
-	  case p_head:
-#if defined DEBUG
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_head") ;
-#endif
-	    if ( (! *ptmp) || ( *ptmp == '\r') ) {
-#if defined DEBUG
-	      ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: >p_field") ;
-#endif
-	      ctx->parse_state = p_field ;
-	    } else
-	      set_header(ctx, ptmp) ;
-	    break ;
-	  case p_field:
-#if defined DEBUG
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_field") ;
-#endif
-	    switch ( is_boundary(ctx, ptmp) ) {
-	      case boundary_part:
-		end_body(ctx) ;
-		ctx->parse_state = p_head ;
-		break ;
-	      case boundary_end:
-		end_body(ctx) ;
-		ctx->parse_state = p_end ;
-		break ;
-	      case boundary_none:
-		if ( ctx->is_file ) {
-		  /*		  apr_brigade_puts(bbout, ap_filter_flush, f, ptmp) ;
-				  apr_brigade_putc(bbout, ap_filter_flush, f, '\n') ;*/
-		  apr_brigade_write(bbout, NULL, NULL, ptmp, ptmplen) ;
-		  if (hasr) apr_brigade_putc(bbout, NULL, NULL, '\r') ;
-		  apr_brigade_putc(bbout, NULL, NULL, '\n') ;
-		} else
-		  set_body(ctx, ptmp) ;
-		break ;
-	    }
-	    break ;
-	  case p_end:
-#if defined DEBUG
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_end") ;
-#endif
-	    //APR_BRIGADE_INSERT_TAIL(bbout,
-	//	apr_bucket_eos_create(bbout->bucket_alloc) ) ;
-	    ctx->parse_state = p_done ;
-	  case p_done:
-#if defined DEBUG
-	    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_done") ;
-#endif
-	    break ;
-	}
-#if defined DEBUG
-	ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: e - ptr: %ld  bytes:%ld  hasr:%d", (e - ptr), bytes, hasr) ;
-#endif
-	if ( e - ptr >= bytes - hasr )
-	  break ;
-	p = e + 1 ;
-	if (hasr) p++;
-      }
-#if defined DEBUG
-      ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: while ends") ;
-#endif
-      if ( ( ctx->parse_state != p_end ) && ( ctx->parse_state != p_done ) ) {
-	size_t bleft = bytes - (p-ptr) ;
-	ctx->leftover = apr_pmemdup(f->r->pool, p, bleft ) ;
-	ctx->leftsize = bleft;
-      }
+        // send an EOS
+        APR_BRIGADE_INSERT_TAIL(bbout, apr_bucket_eos_create(bbout->bucket_alloc) ) ;
+        return APR_SUCCESS ;
     }
-  }
-  apr_brigade_destroy(bbin) ;
-  return ret ;
+
+    /* should be more efficient to do this in-place without resorting
+     * to a new brigade
+     */
+    bbin = apr_brigade_create(f->r->pool, f->r->connection->bucket_alloc) ;
+
+    if ( ret = ap_get_brigade(f->next, bbin, mode, block, readbytes) ,
+         ret != APR_SUCCESS )
+        return ret ;
+
+
+    for ( b = APR_BRIGADE_FIRST(bbin) ;
+          b != APR_BRIGADE_SENTINEL(bbin) ;
+          b = APR_BUCKET_NEXT(b) ) {
+        const char* ptr = buf ;
+        if ( APR_BUCKET_IS_EOS(b) ) {
+            ctx->parse_state = p_done ;
+            APR_BRIGADE_INSERT_TAIL(bbout,
+                                    apr_bucket_eos_create(bbout->bucket_alloc) ) ;
+            apr_brigade_destroy(bbin) ;
+            return APR_SUCCESS ;
+        } else if ( apr_bucket_read(b, &ptr, &bytes, APR_BLOCK_READ)
+                    == APR_SUCCESS ) {
+            const char* p = ptr ;
+#if defined DEBUG
+            ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: %ld bytes in bucket", bytes) ;
+#endif
+            if (ctx->leftover) {
+                apr_size_t new_bytes ;
+#if defined DEBUG
+                ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: leftover %ld bytes", ctx->leftsize) ;
+#endif
+                p = apr_pmemcat(f->r->pool, &new_bytes, ctx->leftover, ctx->leftsize, ptr, bytes, NULL) ;
+                ctx->leftover = NULL ;
+                ctx->leftsize = 0 ;
+                bytes = new_bytes ;
+                ptr = p;
+#if defined DEBUG
+                ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: new size %ld bytes", bytes) ;
+#endif
+            }
+            while ( e = memchr(p, (int)'\n', bytes - (p - ptr)), ( e && ( e < (ptr+bytes) ) ) ) {
+                const char* ptmp = p ;
+                apr_size_t ptmplen = (e - p);
+                int hasr = (ptmplen && ptmp[ptmplen - 1] == '\r') ? 1 : 0 ;
+                *e = 0 ;
+                if (hasr) ptmplen--,*(--e) = 0 ;
+                switch ( ctx->parse_state ) {
+                case p_none:
+#if defined DEBUG
+                    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_none") ;
+#endif
+                    if ( is_boundary(ctx, ptmp) == boundary_part )
+                        ctx->parse_state = p_head ;
+                    break ;
+                case p_head:
+#if defined DEBUG
+                    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_head") ;
+#endif
+                    if ( (! *ptmp) || ( *ptmp == '\r') ) {
+#if defined DEBUG
+                        ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: >p_field") ;
+#endif
+                        ctx->parse_state = p_field ;
+                    } else
+                        set_header(ctx, ptmp) ;
+                    break ;
+                case p_field:
+#if defined DEBUG
+                    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_field") ;
+#endif
+                    switch ( is_boundary(ctx, ptmp) ) {
+                    case boundary_part:
+                        end_body(ctx) ;
+                        ctx->parse_state = p_head ;
+                        break ;
+                    case boundary_end:
+                        end_body(ctx) ;
+                        ctx->parse_state = p_end ;
+                        break ;
+                    case boundary_none:
+                        if ( ctx->is_file ) {
+                            /*		  apr_brigade_puts(bbout, ap_filter_flush, f, ptmp) ;
+                                          apr_brigade_putc(bbout, ap_filter_flush, f, '\n') ;*/
+                            apr_brigade_write(bbout, NULL, NULL, ptmp, ptmplen) ;
+                            if (hasr) apr_brigade_putc(bbout, NULL, NULL, '\r') ;
+                            apr_brigade_putc(bbout, NULL, NULL, '\n') ;
+                        } else
+                            set_body(ctx, ptmp) ;
+                        break ;
+                    }
+                    break ;
+                case p_end:
+#if defined DEBUG
+                    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_end") ;
+#endif
+                    //APR_BRIGADE_INSERT_TAIL(bbout,
+                    //	apr_bucket_eos_create(bbout->bucket_alloc) ) ;
+                    ctx->parse_state = p_done ;
+                case p_done:
+#if defined DEBUG
+                    ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: parse state: p_done") ;
+#endif
+                    break ;
+                }
+#if defined DEBUG
+                ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: e - ptr: %ld  bytes:%ld  hasr:%d", (e - ptr), bytes, hasr) ;
+#endif
+                if ( e - ptr >= bytes - hasr )
+                    break ;
+                p = e + 1 ;
+                if (hasr) p++;
+            }
+#if defined DEBUG
+            ap_log_rerror(APLOG_MARK,APLOG_CRIT,0, f->r, "upload_filter: while ends") ;
+#endif
+            if ( ( ctx->parse_state != p_end ) && ( ctx->parse_state != p_done ) ) {
+                size_t bleft = bytes - (p-ptr) ;
+                ctx->leftover = apr_pmemdup(f->r->pool, p, bleft ) ;
+                ctx->leftsize = bleft;
+            }
+        }
+    }
+    apr_brigade_destroy(bbin) ;
+    return ret ;
 }
 
 
 static int syslog_init(apr_pool_t* p, apr_pool_t* plog,
-	apr_pool_t* ptemp, server_rec* s) {
+                       apr_pool_t* ptemp, server_rec* s) {
 
-  void *data = NULL;
-  char *key;
-  const char *userdata_key = "ag-syslog_post_config";
+    void *data = NULL;
+    char *key;
+    const char *userdata_key = "ag-syslog_post_config";
 
-  // This code is used to prevent double initialization of the module during Apache startup
-  apr_pool_userdata_get(&data, userdata_key, s->process->pool);
-  if ( data == NULL ) {
-    apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
+    // This code is used to prevent double initialization of the module during Apache startup
+    apr_pool_userdata_get(&data, userdata_key, s->process->pool);
+    if ( data == NULL ) {
+        apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
+        return OK;
+    }
+
+    openlog("appgoo", 0, LOG_USER);
     return OK;
-  }
-
-  openlog("appgoo", 0, LOG_USER);
-  return OK;
 }
 
 
 int syslog_level(const char *priority) {
-  if (!strcasecmp(priority, "warn")) return LOG_WARNING;
-  if (!strcasecmp(priority, "error")) return LOG_ERR;
-  if (!strcasecmp(priority, "info")) return LOG_INFO;
+    if (!strcasecmp(priority, "warn")) return LOG_WARNING;
+    if (!strcasecmp(priority, "error")) return LOG_ERR;
+    if (!strcasecmp(priority, "info")) return LOG_INFO;
 
-  return LOG_DEBUG;
+    return LOG_DEBUG;
 }
 
 
 
 static int syslog_handler (request_rec *r) {
-   const char * log_text = NULL;
-   const char *priority = r->path_info;
-   apr_off_t log_size;
-   if (!r -> handler || strcmp (r -> handler, "ag-syslog") ) return DECLINED;
-   if (!r -> method || (strcmp (r -> method, "GET") && strcmp (r -> method, "POST")) ) return DECLINED;
-   if (NULL == r->user) return DECLINED;
+    const char * log_text = NULL;
+    const char *priority = r->path_info;
+    apr_off_t log_size;
+    if (!r -> handler || strcmp (r -> handler, "ag-syslog") ) return DECLINED;
+    if (!r -> method || (strcmp (r -> method, "GET") && strcmp (r -> method, "POST")) ) return DECLINED;
+    if (NULL == r->user) return DECLINED;
 
-   if (OK != util_read(r, &log_text, &log_size)) {
-     ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error reading POST body");
-     return DECLINED;
-   }
-   while(*priority == '/') priority++;
+    if (OK != util_read(r, &log_text, &log_size)) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, 0, r->server, "error reading POST body");
+        return DECLINED;
+    }
+    while(*priority == '/') priority++;
 
-   __(r->server, "[SYSLOG][%s][%s][%s]:%s",
-      ap_get_remote_host(r->connection, r->per_dir_config, REMOTE_NOLOOKUP, NULL), r->user, priority, log_text);
+    __(r->server, "[SYSLOG][%s][%s][%s]:%s",
+       ap_get_remote_host(r->connection, r->per_dir_config, REMOTE_NOLOOKUP, NULL), r->user, priority, log_text);
 
-   syslog(syslog_level(priority), "[%s:%s]:%s",
-	  ap_get_remote_host(r->connection, r->per_dir_config, REMOTE_NOLOOKUP, NULL),
-	  r->user, log_text);
+    syslog(syslog_level(priority), "[%s:%s]:%s",
+           ap_get_remote_host(r->connection, r->per_dir_config, REMOTE_NOLOOKUP, NULL),
+           r->user, log_text);
 
-   ap_set_content_type(r, "text/plain");
-   ap_rprintf(r, "Logged.");
+    ap_set_content_type(r, "text/plain");
+    ap_rprintf(r, "Logged.");
 
-   return OK;
+    return OK;
 }
 
 /* AUTH */
@@ -1507,8 +1508,8 @@ static int hook_note_cookie_auth_failure(request_rec * r,
  * notes table.
  */
 static void set_notes_auth(request_rec * r,
-                                const char *user, const char *pw,
-                                const char *method, const char *mimetype) {
+                           const char *user, const char *pw,
+                           const char *method, const char *mimetype) {
     apr_table_t *notes = NULL;
     const char *authname;
 
@@ -1660,19 +1661,19 @@ static apr_status_t get_session_auth(request_rec * r,
  * if present.
  */
 static int get_form_auth(request_rec * r,
-                             const char *username,
-                             const char *password,
-                             const char *location,
-                             const char *method,
-                             const char *mimetype,
-                             const char *body,
-                             const char **sent_user,
-                             const char **sent_pw,
-                             const char **sent_loc,
-                             const char **sent_method,
-                             const char **sent_mimetype,
-                             apr_bucket_brigade **sent_body,
-                             ag_dir_cfg * conf)
+                         const char *username,
+                         const char *password,
+                         const char *location,
+                         const char *method,
+                         const char *mimetype,
+                         const char *body,
+                         const char **sent_user,
+                         const char **sent_pw,
+                         const char **sent_loc,
+                         const char **sent_method,
+                         const char **sent_mimetype,
+                         apr_bucket_brigade **sent_body,
+                         ag_dir_cfg * conf)
 {
     /* sanity check - are we a POST request? */
 
@@ -1808,7 +1809,7 @@ static int check_site(request_rec * r, const char *site, const char *sent_user, 
 
     if (site && sent_user && sent_hash) {
         const char *hash = ap_md5(r->pool,
-                      (unsigned char *) apr_pstrcat(r->pool, sent_user, ":", site, NULL));
+                                  (unsigned char *) apr_pstrcat(r->pool, sent_user, ":", site, NULL));
 
         if (!strcmp(sent_hash, hash)) {
             return OK;
@@ -1830,69 +1831,69 @@ static int check_site(request_rec * r, const char *site, const char *sent_user, 
  * Return an HTTP code.
  */
 static int check_authn(request_rec * r, const char *sent_user, const char *sent_pw, const char **sent_loc) {
-  authn_status auth_result;
-  ag_dir_cfg *conf = ap_get_module_config(r->per_dir_config, &ag_module);
-  PGconn * pgc;
-  PGresult * pgr;
-  int tuple_count;
-  int i, res;
-  char *message;
-  char digest[65];
-  char digest_print[1030];
+    authn_status auth_result;
+    ag_dir_cfg *conf = ap_get_module_config(r->per_dir_config, &ag_module);
+    PGconn * pgc;
+    PGresult * pgr;
+    int tuple_count;
+    int i, res;
+    char *message;
+    char digest[65];
+    char digest_print[1030];
 
 
-  if (sent_loc != NULL) *sent_loc = NULL;
-  if (!sent_user || !sent_pw) {
-    auth_result = AUTH_USER_NOT_FOUND;
-  } else {
-    apr_table_setn(r->notes, AUTHN_PROVIDER_NAME_NOTE, AUTHN_APPGOO_PROVIDER);
-    //      auth_result = provider->check_password(r, sent_user, sent_pw);
-    pgc = ag_pool_open(r->server);
-    switch ((pgc != NULL) ? true : false) {
-    case false:
-      spit_pg_error_syslog("connect for auth");
-      auth_result = AUTH_GENERAL_ERROR;
-      break;
-    case true:
-      pgr = PQexec(pgc, apr_psprintf(r->pool,
-				     //				     "select u.id, username, password, coalesce(case when start_page !~ '^[0-9]$' then page_file else NULL end, case when u.start_page ~ '^[0-9]+$' then '/p/dashboard_page?p_dashboard_id=' || u.start_page else NULL end) as location from _ag_um_users u left join lu_page_names pn ON pn.code = u.start_page where coalesce(u.start_date, now()) <= now() and coalesce(u.end_date, now()) >= now() and username = '%s'",
-				     "select u.id, username, password, NULL as location from _ag_um_users u WHERE username = '%s'",
-				     sent_user)
-		   );
-      if (PQresultStatus(pgr) != PGRES_TUPLES_OK) {
-	spit_pg_error_syslog ("requesting users");
-	ag_pool_close(r->server, pgc);
-	auth_result = AUTH_GENERAL_ERROR;
-	PQclear (pgr);
-	break;
-      }
-      auth_result = AUTH_USER_NOT_FOUND;
-      tuple_count = PQntuples(pgr);
-      //      __(r->server, " ** %d tuples for user '%s'", tuple_count, sent_user);
-      for (i = 0; i < tuple_count; i++) {
-	message = apr_pstrcat(r->pool,  PQgetvalue(pgr, i, 0), sent_pw, NULL);
-	res = rhash_msg(RHASH_SHA3_512, message, strlen(message), digest);
-	if (res < 0) {
-	  ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "SHA3_512 hash calculation error %d", res) ;
-	  auth_result = AUTH_GENERAL_ERROR;
-	  PQclear (pgr);
-	  break;
-	}
-	rhash_print_bytes(digest_print, digest, rhash_get_digest_size(RHASH_SHA3_512), RHPR_HEX);
-	if (0 == strcmp(digest_print, PQgetvalue(pgr, i, 2))) {
-	  auth_result = AUTH_GRANTED;
-	  if (sent_loc != NULL) {
-	    *sent_loc = apr_pstrdup(r->pool, PQgetvalue(pgr, i, 3));
-	  }
-	  break;
-	} else auth_result = AUTH_DENIED;
-      }
-      PQclear (pgr);
-      break;
+    if (sent_loc != NULL) *sent_loc = NULL;
+    if (!sent_user || !sent_pw) {
+        auth_result = AUTH_USER_NOT_FOUND;
+    } else {
+        apr_table_setn(r->notes, AUTHN_PROVIDER_NAME_NOTE, AUTHN_APPGOO_PROVIDER);
+        //      auth_result = provider->check_password(r, sent_user, sent_pw);
+        pgc = ag_pool_open(r->server);
+        switch ((pgc != NULL) ? true : false) {
+        case false:
+            spit_pg_error_syslog("connect for auth");
+            auth_result = AUTH_GENERAL_ERROR;
+            break;
+        case true:
+            pgr = PQexec(pgc, apr_psprintf(r->pool,
+                                           //				     "select u.id, username, password, coalesce(case when start_page !~ '^[0-9]$' then page_file else NULL end, case when u.start_page ~ '^[0-9]+$' then '/p/dashboard_page?p_dashboard_id=' || u.start_page else NULL end) as location from _ag_um_users u left join lu_page_names pn ON pn.code = u.start_page where coalesce(u.start_date, now()) <= now() and coalesce(u.end_date, now()) >= now() and username = '%s'",
+                                           "select u.id, username, password, NULL as location from _ag_um_users u WHERE username = '%s'",
+                                           sent_user)
+                         );
+            if (PQresultStatus(pgr) != PGRES_TUPLES_OK) {
+                spit_pg_error_syslog ("requesting users");
+                ag_pool_close(r->server, pgc);
+                auth_result = AUTH_GENERAL_ERROR;
+                PQclear (pgr);
+                break;
+            }
+            auth_result = AUTH_USER_NOT_FOUND;
+            tuple_count = PQntuples(pgr);
+            //      __(r->server, " ** %d tuples for user '%s'", tuple_count, sent_user);
+            for (i = 0; i < tuple_count; i++) {
+                message = apr_pstrcat(r->pool,  PQgetvalue(pgr, i, 0), sent_pw, NULL);
+                res = rhash_msg(RHASH_SHA3_512, message, strlen(message), digest);
+                if (res < 0) {
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "SHA3_512 hash calculation error %d", res) ;
+                    auth_result = AUTH_GENERAL_ERROR;
+                    PQclear (pgr);
+                    break;
+                }
+                rhash_print_bytes(digest_print, digest, rhash_get_digest_size(RHASH_SHA3_512), RHPR_HEX);
+                if (0 == strcmp(digest_print, PQgetvalue(pgr, i, 2))) {
+                    auth_result = AUTH_GRANTED;
+                    if (sent_loc != NULL) {
+                        *sent_loc = apr_pstrdup(r->pool, PQgetvalue(pgr, i, 3));
+                    }
+                    break;
+                } else auth_result = AUTH_DENIED;
+            }
+            PQclear (pgr);
+            break;
+        }
+        ag_pool_close(r->server, pgc);
+        apr_table_unset(r->notes, AUTHN_PROVIDER_NAME_NOTE);
     }
-    ag_pool_close(r->server, pgc);
-    apr_table_unset(r->notes, AUTHN_PROVIDER_NAME_NOTE);
-  }
 
     if (auth_result != AUTH_GRANTED) {
         int return_code;
@@ -1930,7 +1931,7 @@ static int check_authn(request_rec * r, const char *sent_user, const char *sent_
             note_cookie_auth_failure(r);
         }
 
-/* TODO: Flag the user somehow as to the reason for the failure */
+        /* TODO: Flag the user somehow as to the reason for the failure */
 
         return return_code;
     }
@@ -2204,15 +2205,15 @@ static int authenticate_form_authn(request_rec * r)
 	    //	    __(r->server, " Restore kept_body");
 	    //	    __(r->server, " sent_method:%s", sent_method);
 	    if (!strcmp(sent_method, "GET")) {
-	      apr_off_t len;
-	      apr_size_t size;
-	      apr_brigade_length(sent_body, 1, &len);
-	      size = (apr_size_t) len;
-	      r->args = apr_palloc(r->pool, size + 1);
-	      apr_brigade_flatten(sent_body, r->args, &size);
-	      r->args[len] = 0;
-	      ap_unescape_urlencoded(r->args);
-	      //	      __(r->server, " restore args:%s", r->args);
+                apr_off_t len;
+                apr_size_t size;
+                apr_brigade_length(sent_body, 1, &len);
+                size = (apr_size_t) len;
+                r->args = apr_palloc(r->pool, size + 1);
+                apr_brigade_flatten(sent_body, r->args, &size);
+                r->args[len] = 0;
+                ap_unescape_urlencoded(r->args);
+                //	      __(r->server, " restore args:%s", r->args);
 	    }
         }
         else {
@@ -2230,8 +2231,8 @@ static int authenticate_form_authn(request_rec * r)
         }
 
 	if (sent_loc) {
-	  r->uri = (char*)sent_loc;
-	  r->handler = FORM_REDIRECT_HANDLER;
+            r->uri = (char*)sent_loc;
+            r->handler = FORM_REDIRECT_HANDLER;
 	}
 
         /* check the authn in the main request, based on the username found */
@@ -2242,12 +2243,12 @@ static int authenticate_form_authn(request_rec * r)
                 set_session_auth(r, sent_user, sent_pw, conf->site);
 
 		if (user_loc != NULL && *user_loc != '\0' && !strcmp(r->uri, "/p/home_page")) {
-		  apr_table_set(r->headers_out, "Location", user_loc);
-		  return HTTP_MOVED_TEMPORARILY;
+                    apr_table_set(r->headers_out, "Location", user_loc);
+                    return HTTP_MOVED_TEMPORARILY;
 		}
                 if (conf->loginsuccess) {
                     const char *loginsuccess = ap_expr_str_exec(r,
-                            conf->loginsuccess, &err);
+                                                                conf->loginsuccess, &err);
                     if (!err) {
                         apr_table_set(r->headers_out, "Location", loginsuccess);
                         return HTTP_MOVED_TEMPORARILY;
@@ -2269,113 +2270,113 @@ static int authenticate_form_authn(request_rec * r)
      */
     if (HTTP_UNAUTHORIZED == rv && loginrequired) {
         const char *loginrequired = ap_expr_str_exec(r,
-                conf->loginrequired, &err);
+                                                     conf->loginrequired, &err);
         if (!err) {
-	  request_rec *sub_req;
-	  char *udir, *body = NULL;
-	  apr_bucket *b;
-	  apr_bucket_brigade *bb;
-	  int res = HTTP_INTERNAL_SERVER_ERROR;
+            request_rec *sub_req;
+            char *udir, *body = NULL;
+            apr_bucket *b;
+            apr_bucket_brigade *bb;
+            int res = HTTP_INTERNAL_SERVER_ERROR;
 	  
-	  sub_req = make_sub_request(r, r->output_filters);
+            sub_req = make_sub_request(r, r->output_filters);
 
-	  r->user = "nobody";
-	  sub_req->method = "POST";
-	  sub_req->method_number = ap_method_number_of(sub_req->method);
+            r->user = "nobody";
+            sub_req->method = "POST";
+            sub_req->method_number = ap_method_number_of(sub_req->method);
 	  
-	  if (loginrequired[0] == '/') {
-	    ap_parse_uri(sub_req, loginrequired);
-	  }
-	  else {
-	    udir = ap_make_dirstr_parent(sub_req->pool, r->uri);
-	    udir = ap_escape_uri(sub_req->pool, udir);    /* re-escape it */
-	    ap_parse_uri(sub_req, ap_make_full_path(sub_req->pool, udir, loginrequired));
-	  }
+            if (loginrequired[0] == '/') {
+                ap_parse_uri(sub_req, loginrequired);
+            }
+            else {
+                udir = ap_make_dirstr_parent(sub_req->pool, r->uri);
+                udir = ap_escape_uri(sub_req->pool, udir);    /* re-escape it */
+                ap_parse_uri(sub_req, ap_make_full_path(sub_req->pool, udir, loginrequired));
+            }
 
-	  //	  __(r->server, " r.uri: %s", r->uri);
-	  //	  __(r->server, " r.args: %s", r->args);
+            //	  __(r->server, " r.uri: %s", r->uri);
+            //	  __(r->server, " r.args: %s", r->args);
 
-	  if (sub_req->args == NULL) {
-	    sub_req->args =  apr_pstrdup(sub_req->pool, r->args);
-	  } else {
-	    sub_req->args = apr_pstrcat(sub_req->pool, sub_req->args, "&", r->args, NULL);
-	  }
+            if (sub_req->args == NULL) {
+                sub_req->args =  apr_pstrdup(sub_req->pool, r->args);
+            } else {
+                sub_req->args = apr_pstrcat(sub_req->pool, sub_req->args, "&", r->args, NULL);
+            }
 
-	  if (sub_req->args) {
-	    body = apr_pstrcat(sub_req->pool, sub_req->args, "&", NULL);
-	  }
+            if (sub_req->args) {
+                body = apr_pstrcat(sub_req->pool, sub_req->args, "&", NULL);
+            }
 	  
-	  if (sub_req->kept_body != NULL) {
-	    apr_size_t bytes, count = 0;
-	    const char *buf;
-	    for (b = APR_BRIGADE_FIRST(sub_req->kept_body);
-		 b != APR_BRIGADE_SENTINEL(sub_req->kept_body);
-		 b = APR_BUCKET_NEXT(b) ) {
-	      if (APR_BUCKET_IS_EOS(b)) {
-		break;
-	      } else if (APR_BUCKET_IS_METADATA(b)) {
-		continue;
-	      } else if (APR_SUCCESS == apr_bucket_read(b, &buf, &bytes, APR_BLOCK_READ)) {
-		char *x = apr_pstrndup(sub_req->pool, buf, bytes);
-		if (body != NULL)
-		  body = apr_pstrcat(sub_req->pool, body, x, NULL);
-		else
-		  body = x;
-		count += bytes;
-	      } else {
-		__(r->server, "READ request body READ BUCKET ERROR");
-	      }
-	    }
-	    apr_brigade_cleanup(sub_req->kept_body);
-	  }
-	  sub_req->kept_body = apr_brigade_create(sub_req->pool, sub_req->connection->bucket_alloc);
+            if (sub_req->kept_body != NULL) {
+                apr_size_t bytes, count = 0;
+                const char *buf;
+                for (b = APR_BRIGADE_FIRST(sub_req->kept_body);
+                     b != APR_BRIGADE_SENTINEL(sub_req->kept_body);
+                     b = APR_BUCKET_NEXT(b) ) {
+                    if (APR_BUCKET_IS_EOS(b)) {
+                        break;
+                    } else if (APR_BUCKET_IS_METADATA(b)) {
+                        continue;
+                    } else if (APR_SUCCESS == apr_bucket_read(b, &buf, &bytes, APR_BLOCK_READ)) {
+                        char *x = apr_pstrndup(sub_req->pool, buf, bytes);
+                        if (body != NULL)
+                            body = apr_pstrcat(sub_req->pool, body, x, NULL);
+                        else
+                            body = x;
+                        count += bytes;
+                    } else {
+                        __(r->server, "READ request body READ BUCKET ERROR");
+                    }
+                }
+                apr_brigade_cleanup(sub_req->kept_body);
+            }
+            sub_req->kept_body = apr_brigade_create(sub_req->pool, sub_req->connection->bucket_alloc);
 
-	  apr_brigade_putstrs(sub_req->kept_body, NULL, NULL,
-			      "&", conf->method, "=", r->method,
-			      "&", conf->location, "=", ap_escape_uri(sub_req->pool, r->uri),
-			      "&", conf->mimetype, "=", apr_table_get(r->headers_in, "Content-Type"),
-			      "&",
-			      NULL);
-	  if (body) {
-	    apr_brigade_putstrs(sub_req->kept_body, NULL, NULL,
-				"&", conf->body, "=", ap_escape_uri(sub_req->pool, body),
-				NULL);
-	  }
+            apr_brigade_putstrs(sub_req->kept_body, NULL, NULL,
+                                "&", conf->method, "=", r->method,
+                                "&", conf->location, "=", ap_escape_uri(sub_req->pool, r->uri),
+                                "&", conf->mimetype, "=", apr_table_get(r->headers_in, "Content-Type"),
+                                "&",
+                                NULL);
+            if (body) {
+                apr_brigade_putstrs(sub_req->kept_body, NULL, NULL,
+                                    "&", conf->body, "=", ap_escape_uri(sub_req->pool, body),
+                                    NULL);
+            }
 	  
-	  apr_table_setn(sub_req->headers_in, "Content-Type", "application/x-www-form-urlencoded");
+            apr_table_setn(sub_req->headers_in, "Content-Type", "application/x-www-form-urlencoded");
 	   
-	  if (ap_is_recursion_limit_exceeded(r)) {
-	    __(r->server, "Recusrion Limit Exceeded");
-	    sub_req->status = HTTP_INTERNAL_SERVER_ERROR;
-	  } else {
-	    if (r->output_filters) {
-	      res = ap_run_quick_handler(sub_req, 1);
-	    }
+            if (ap_is_recursion_limit_exceeded(r)) {
+                __(r->server, "Recusrion Limit Exceeded");
+                sub_req->status = HTTP_INTERNAL_SERVER_ERROR;
+            } else {
+                if (r->output_filters) {
+                    res = ap_run_quick_handler(sub_req, 1);
+                }
 
-	    if (r->output_filters == NULL || res != OK) {
-	      if ((res = ap_process_request_internal(sub_req))) {
-		sub_req->status = res;
-	      }
-	    }
-	  }
+                if (r->output_filters == NULL || res != OK) {
+                    if ((res = ap_process_request_internal(sub_req))) {
+                        sub_req->status = res;
+                    }
+                }
+            }
 
-	  res = sub_req->status;
-	  if (res != HTTP_OK) {
-	    ap_destroy_sub_req(sub_req);
-	  } else {
-	    /* now do a "fast redirect" ... promotes the sub_req into the main req */
-	    ap_internal_fast_redirect(sub_req, r);
-	    r->kept_body = sub_req->kept_body; // as ap_internal_fast_redirect() do not do that
-	    r->status = ap_run_sub_req(sub_req);
-	    r->mtime = 0;
-	    //	    ap_destroy_sub_req(sub_req);
-	  }
+            res = sub_req->status;
+            if (res != HTTP_OK) {
+                ap_destroy_sub_req(sub_req);
+            } else {
+                /* now do a "fast redirect" ... promotes the sub_req into the main req */
+                ap_internal_fast_redirect(sub_req, r);
+                r->kept_body = sub_req->kept_body; // as ap_internal_fast_redirect() do not do that
+                r->status = ap_run_sub_req(sub_req);
+                r->mtime = 0;
+                //	    ap_destroy_sub_req(sub_req);
+            }
 	  
-	  return r->status == HTTP_OK || r->status == OK ? OK : r->status;
-	  //return res;
+            return r->status == HTTP_OK || r->status == OK ? OK : r->status;
+            //return res;
 	  
-	  //            apr_table_set(r->headers_out, "Location", loginrequired);
-	  //            return HTTP_MOVED_TEMPORARILY;
+            //            apr_table_set(r->headers_out, "Location", loginrequired);
+            //            return HTTP_MOVED_TEMPORARILY;
         }
         else {
             ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(02340)
@@ -2436,7 +2437,7 @@ static int authenticate_form_login_handler(request_rec * r)
 
     if (r->method_number != M_POST) {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01811)
-          "the " FORM_LOGIN_HANDLER " only supports the POST method for %s",
+                      "the " FORM_LOGIN_HANDLER " only supports the POST method for %s",
                       r->uri);
         return HTTP_METHOD_NOT_ALLOWED;
     }
@@ -2461,7 +2462,7 @@ static int authenticate_form_login_handler(request_rec * r)
             }
             if (conf->loginsuccess) {
                 const char *loginsuccess = ap_expr_str_exec(r,
-                        conf->loginsuccess, &err);
+                                                            conf->loginsuccess, &err);
                 if (!err) {
                     apr_table_set(r->headers_out, "Location", loginsuccess);
                     return HTTP_MOVED_TEMPORARILY;
@@ -2479,7 +2480,7 @@ static int authenticate_form_login_handler(request_rec * r)
     /* did we prefer to be redirected to the login page on failure instead? */
     if (HTTP_UNAUTHORIZED == rv && conf->loginrequired) {
         const char *loginrequired = ap_expr_str_exec(r,
-                conf->loginrequired, &err);
+                                                     conf->loginrequired, &err);
         if (!err) {
             apr_table_set(r->headers_out, "Location", loginrequired);
             return HTTP_MOVED_TEMPORARILY;
@@ -2530,7 +2531,7 @@ static int authenticate_form_logout_handler(request_rec * r)
     /* if set, internal redirect to the logout page */
     if (conf->logout) {
         const char *logout = ap_expr_str_exec(r,
-                conf->logout, &err);
+                                              conf->logout, &err);
         if (!err) {
             apr_table_addn(r->headers_out, "Location", logout);
             return HTTP_TEMPORARY_REDIRECT;
@@ -2572,7 +2573,7 @@ static int authenticate_form_redirect_handler(request_rec * r)
     if (r->kept_body && sent_method && sent_mimetype) {
 
         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, APLOGNO(01812)
-          "internal redirect to method '%s' and body mimetype '%s' for the "
+                      "internal redirect to method '%s' and body mimetype '%s' for the "
                       "uri: %s", sent_method, sent_mimetype, r->uri);
 
         rr = ap_sub_req_method_uri(sent_method, r->uri, r, r->output_filters);
@@ -2581,7 +2582,7 @@ static int authenticate_form_redirect_handler(request_rec * r)
     }
     else {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01813)
-        "internal redirect requested but one or all of method, mimetype or "
+                      "internal redirect requested but one or all of method, mimetype or "
                       "body are NULL: %s", r->uri);
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -2593,109 +2594,109 @@ static int authenticate_form_redirect_handler(request_rec * r)
 
 
 static int authenticate_form_post_config(apr_pool_t *pconf, apr_pool_t *plog,
-        apr_pool_t *ptemp, server_rec *s) {
+                                         apr_pool_t *ptemp, server_rec *s) {
 
-  if (!ap_session_load_fn || !ap_session_get_fn || !ap_session_set_fn) {
-    ap_session_load_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_load);
-    ap_session_get_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_get);
-    ap_session_set_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_set);
     if (!ap_session_load_fn || !ap_session_get_fn || !ap_session_set_fn) {
-      ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02617)
-		   "You must load mod_session to enable appGoo authorisation "
-                                       "functions");
-      return !OK;
+        ap_session_load_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_load);
+        ap_session_get_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_get);
+        ap_session_set_fn = APR_RETRIEVE_OPTIONAL_FN(ap_session_set);
+        if (!ap_session_load_fn || !ap_session_get_fn || !ap_session_set_fn) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02617)
+                         "You must load mod_session to enable appGoo authorisation "
+                         "functions");
+            return !OK;
+        }
     }
-  }
 
-  if (!ap_request_insert_filter_fn || !ap_request_remove_filter_fn) {
-    ap_request_insert_filter_fn = APR_RETRIEVE_OPTIONAL_FN(ap_request_insert_filter);
-    ap_request_remove_filter_fn = APR_RETRIEVE_OPTIONAL_FN(ap_request_remove_filter);
     if (!ap_request_insert_filter_fn || !ap_request_remove_filter_fn) {
-      ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02618)
-		   "You must load mod_request to enable appGoo "
-		   "functions");
-      return !OK;
+        ap_request_insert_filter_fn = APR_RETRIEVE_OPTIONAL_FN(ap_request_insert_filter);
+        ap_request_remove_filter_fn = APR_RETRIEVE_OPTIONAL_FN(ap_request_remove_filter);
+        if (!ap_request_insert_filter_fn || !ap_request_remove_filter_fn) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, 0, NULL, APLOGNO(02618)
+                         "You must load mod_request to enable appGoo "
+                         "functions");
+            return !OK;
+        }
     }
-  }
-  return OK;
+    return OK;
 }
 
 
 
 static const command_rec ag_directives[] = {
-  AP_INIT_TAKE1("agEnabled",          set_param, (void*)cmd_enabled,    RSRC_CONF, "Enable or disable mod_ag"),
-  AP_INIT_TAKE1("agPoolKey",          set_param, (void*)cmd_setkey,     RSRC_CONF, "Unique Pool ID string"),
-  AP_INIT_TAKE1("agConnectionString", set_param, (void*)cmd_connection, RSRC_CONF, "Postgres connection string"),
-  AP_INIT_TAKE1("agPoolMin",          set_param, (void*)cmd_min,        RSRC_CONF, "Minimum number of connections"),
-  AP_INIT_TAKE1("agPoolKeep",         set_param, (void*)cmd_keep,       RSRC_CONF, "Maximum number of sustained connections"),
-  AP_INIT_TAKE1("agPoolMax",          set_param, (void*)cmd_max,        RSRC_CONF, "Maximum number of connections"),
-  AP_INIT_TAKE1("agPoolExptime",      set_param, (void*)cmd_exp,        RSRC_CONF, "Keepalive time for idle connections") ,
-  AP_INIT_TAKE1("agContentType",      set_content_type, NULL, OR_AUTHCFG, "Content-Type header to send"),
-  AP_INIT_TAKE1("agUploadField",      set_filename,  NULL, OR_ALL, "Set name of file upload field" ) ,
-  AP_INIT_TAKE1("agUploadFolder",     set_foldername,NULL, OR_ALL, "Set name of folder upload field" ) ,
-  AP_INIT_TAKE1("agUploadDirectory",  set_directory, NULL, OR_ALL, "Set directory for uploaded files, /tmp by default" ),
-  AP_INIT_TAKE1("agUploadFormSize",   set_formsize,  NULL, OR_ALL, "Set number of form fields, 8 by default" ) ,
+    AP_INIT_TAKE1("agEnabled",          set_param, (void*)cmd_enabled,    RSRC_CONF, "Enable or disable mod_ag"),
+    AP_INIT_TAKE1("agPoolKey",          set_param, (void*)cmd_setkey,     RSRC_CONF, "Unique Pool ID string"),
+    AP_INIT_TAKE1("agConnectionString", set_param, (void*)cmd_connection, RSRC_CONF, "Postgres connection string"),
+    AP_INIT_TAKE1("agPoolMin",          set_param, (void*)cmd_min,        RSRC_CONF, "Minimum number of connections"),
+    AP_INIT_TAKE1("agPoolKeep",         set_param, (void*)cmd_keep,       RSRC_CONF, "Maximum number of sustained connections"),
+    AP_INIT_TAKE1("agPoolMax",          set_param, (void*)cmd_max,        RSRC_CONF, "Maximum number of connections"),
+    AP_INIT_TAKE1("agPoolExptime",      set_param, (void*)cmd_exp,        RSRC_CONF, "Keepalive time for idle connections") ,
+    AP_INIT_TAKE1("agContentType",      set_content_type, NULL, OR_AUTHCFG, "Content-Type header to send"),
+    AP_INIT_TAKE1("agUploadField",      set_filename,  NULL, OR_ALL, "Set name of file upload field" ) ,
+    AP_INIT_TAKE1("agUploadFolder",     set_foldername,NULL, OR_ALL, "Set name of folder upload field" ) ,
+    AP_INIT_TAKE1("agUploadDirectory",  set_directory, NULL, OR_ALL, "Set directory for uploaded files, /tmp by default" ),
+    AP_INIT_TAKE1("agUploadFormSize",   set_formsize,  NULL, OR_ALL, "Set number of form fields, 8 by default" ) ,
 
-  AP_INIT_TAKE1("AuthFormUsername", set_cookie_form_username, NULL, OR_AUTHCFG, "The field of the login form carrying the username"),
-  AP_INIT_TAKE1("AuthFormPassword", set_cookie_form_password, NULL, OR_AUTHCFG, "The field of the login form carrying the password"),
-  AP_INIT_TAKE1("AuthFormLocation", set_cookie_form_location, NULL, OR_AUTHCFG, "The field of the login form carrying the URL to redirect on "
-		"successful login."),
-  AP_INIT_TAKE1("AuthFormMethod", set_cookie_form_method, NULL, OR_AUTHCFG, "The field of the login form carrying the original request method."),
-  AP_INIT_TAKE1("AuthFormMimetype", set_cookie_form_mimetype, NULL, OR_AUTHCFG, "The field of the login form carrying the original request mimetype."),
-  AP_INIT_TAKE1("AuthFormBody", set_cookie_form_body, NULL, OR_AUTHCFG, "The field of the login form carrying the urlencoded original request "
-		"body."),
-  AP_INIT_TAKE1("AuthFormSize", set_cookie_form_size, NULL, ACCESS_CONF, "Maximum size of body parsed by the form parser"),
-  AP_INIT_TAKE1("AuthFormLoginRequiredLocation", set_login_required_location, NULL, OR_AUTHCFG,
-		"If set, redirect the browser to this URL rather than return 401 Not Authorized."),
-  AP_INIT_TAKE1("AuthFormLoginSuccessLocation", set_login_success_location, NULL, OR_AUTHCFG,
-		"If set, redirect the browser to this URL when a login processed by the login handler is successful."),
-  AP_INIT_TAKE1("AuthFormLogoutLocation", set_logout_location, NULL, OR_AUTHCFG,
-		"The URL of the logout successful page. An attempt to access an "
-		"URL handled by the handler " FORM_LOGOUT_HANDLER " will result "
-		"in an redirect to this page after logout."),
-  AP_INIT_TAKE1("AuthFormSitePassphrase", set_site_passphrase, NULL, OR_AUTHCFG,
-		"If set, use this passphrase to determine whether the user should "
-		"be authenticated. Bypasses the user authentication check on "
-		"every website hit, and is useful for high traffic sites."),
-  AP_INIT_FLAG("AuthFormAuthoritative", set_authoritative, NULL, OR_AUTHCFG,
-	       "Set to 'Off' to allow access control to be passed along to lower modules if the UserID is not known to this module"),
-  AP_INIT_FLAG("AuthFormFakeBasicAuth", set_fake_basic_auth, NULL, OR_AUTHCFG,
-	       "Set to 'On' to pass through authentication to the rest of the server as a basic authentication header."),
-  AP_INIT_FLAG("AuthFormDisableNoStore", set_disable_no_store, NULL, OR_AUTHCFG,
-	       "Set to 'on' to stop the sending of a Cache-Control no-store header with "
-	       "the login screen. This allows the browser to cache the credentials, but "
-	       "at the risk of it being possible for the login form to be resubmitted "
-	       "and revealed to the backend server through XSS. Use at own risk."),
-  {NULL}
+    AP_INIT_TAKE1("AuthFormUsername", set_cookie_form_username, NULL, OR_AUTHCFG, "The field of the login form carrying the username"),
+    AP_INIT_TAKE1("AuthFormPassword", set_cookie_form_password, NULL, OR_AUTHCFG, "The field of the login form carrying the password"),
+    AP_INIT_TAKE1("AuthFormLocation", set_cookie_form_location, NULL, OR_AUTHCFG, "The field of the login form carrying the URL to redirect on "
+                  "successful login."),
+    AP_INIT_TAKE1("AuthFormMethod", set_cookie_form_method, NULL, OR_AUTHCFG, "The field of the login form carrying the original request method."),
+    AP_INIT_TAKE1("AuthFormMimetype", set_cookie_form_mimetype, NULL, OR_AUTHCFG, "The field of the login form carrying the original request mimetype."),
+    AP_INIT_TAKE1("AuthFormBody", set_cookie_form_body, NULL, OR_AUTHCFG, "The field of the login form carrying the urlencoded original request "
+                  "body."),
+    AP_INIT_TAKE1("AuthFormSize", set_cookie_form_size, NULL, ACCESS_CONF, "Maximum size of body parsed by the form parser"),
+    AP_INIT_TAKE1("AuthFormLoginRequiredLocation", set_login_required_location, NULL, OR_AUTHCFG,
+                  "If set, redirect the browser to this URL rather than return 401 Not Authorized."),
+    AP_INIT_TAKE1("AuthFormLoginSuccessLocation", set_login_success_location, NULL, OR_AUTHCFG,
+                  "If set, redirect the browser to this URL when a login processed by the login handler is successful."),
+    AP_INIT_TAKE1("AuthFormLogoutLocation", set_logout_location, NULL, OR_AUTHCFG,
+                  "The URL of the logout successful page. An attempt to access an "
+                  "URL handled by the handler " FORM_LOGOUT_HANDLER " will result "
+                  "in an redirect to this page after logout."),
+    AP_INIT_TAKE1("AuthFormSitePassphrase", set_site_passphrase, NULL, OR_AUTHCFG,
+                  "If set, use this passphrase to determine whether the user should "
+                  "be authenticated. Bypasses the user authentication check on "
+                  "every website hit, and is useful for high traffic sites."),
+    AP_INIT_FLAG("AuthFormAuthoritative", set_authoritative, NULL, OR_AUTHCFG,
+                 "Set to 'Off' to allow access control to be passed along to lower modules if the UserID is not known to this module"),
+    AP_INIT_FLAG("AuthFormFakeBasicAuth", set_fake_basic_auth, NULL, OR_AUTHCFG,
+                 "Set to 'On' to pass through authentication to the rest of the server as a basic authentication header."),
+    AP_INIT_FLAG("AuthFormDisableNoStore", set_disable_no_store, NULL, OR_AUTHCFG,
+                 "Set to 'on' to stop the sending of a Cache-Control no-store header with "
+                 "the login screen. This allows the browser to cache the credentials, but "
+                 "at the risk of it being possible for the login form to be resubmitted "
+                 "and revealed to the backend server through XSS. Use at own risk."),
+    {NULL}
 } ;
 
 static void register_hooks (apr_pool_t* p) {
-  static const char * const aszPre[]={ "http_core.c", "http_vhost.c", "mod_ssl.c", NULL };
-  ap_hook_pre_config (init_db_pool, NULL, NULL, APR_HOOK_MIDDLE) ;
-  ap_hook_post_config (setup_db_pool, aszPre, NULL, APR_HOOK_LAST) ;
-  ap_hook_post_config (syslog_init, NULL, NULL, APR_HOOK_MIDDLE) ;
-  ap_hook_handler (ag_handler, NULL, NULL, APR_HOOK_LAST);
-  ap_hook_handler (syslog_handler, NULL, NULL, APR_HOOK_FIRST);
-  ap_register_input_filter("tmpfile-filter", tmpfile_filter, NULL, AP_FTYPE_RESOURCE) ;
-  ap_register_input_filter("upload-filter", upload_filter, upload_filter_init, AP_FTYPE_RESOURCE) ;
+    static const char * const aszPre[]={ "http_core.c", "http_vhost.c", "mod_ssl.c", NULL };
+    ap_hook_pre_config (init_db_pool, NULL, NULL, APR_HOOK_MIDDLE) ;
+    ap_hook_post_config (setup_db_pool, aszPre, NULL, APR_HOOK_LAST) ;
+    ap_hook_post_config (syslog_init, NULL, NULL, APR_HOOK_MIDDLE) ;
+    ap_hook_handler (ag_handler, NULL, NULL, APR_HOOK_LAST);
+    ap_hook_handler (syslog_handler, NULL, NULL, APR_HOOK_FIRST);
+    ap_register_input_filter("tmpfile-filter", tmpfile_filter, NULL, AP_FTYPE_RESOURCE) ;
+    ap_register_input_filter("upload-filter", upload_filter, upload_filter_init, AP_FTYPE_RESOURCE) ;
 
-  ap_hook_post_config(authenticate_form_post_config,NULL,NULL,APR_HOOK_MIDDLE);
-  ap_hook_check_authn(authenticate_form_authn, NULL, NULL, APR_HOOK_MIDDLE, AP_AUTH_INTERNAL_PER_CONF);
-  ap_hook_handler(authenticate_form_login_handler, NULL, NULL, APR_HOOK_MIDDLE);
-  ap_hook_handler(authenticate_form_logout_handler, NULL, NULL, APR_HOOK_MIDDLE);
-  ap_hook_handler(authenticate_form_redirect_handler, NULL, NULL, APR_HOOK_MIDDLE);
-  ap_hook_note_auth_failure(hook_note_cookie_auth_failure, NULL, NULL,
+    ap_hook_post_config(authenticate_form_post_config,NULL,NULL,APR_HOOK_MIDDLE);
+    ap_hook_check_authn(authenticate_form_authn, NULL, NULL, APR_HOOK_MIDDLE, AP_AUTH_INTERNAL_PER_CONF);
+    ap_hook_handler(authenticate_form_login_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_handler(authenticate_form_logout_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_handler(authenticate_form_redirect_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_note_auth_failure(hook_note_cookie_auth_failure, NULL, NULL,
                               APR_HOOK_MIDDLE);
 }
 
 module AP_MODULE_DECLARE_DATA ag_module =
-{
-    STANDARD20_MODULE_STUFF,
-    create_dir_config,
-    merge_dir_config,
-    create_ag_config,
-    merge_ag_config,
-    ag_directives,
-    register_hooks
-};
+  {
+      STANDARD20_MODULE_STUFF,
+      create_dir_config,
+      merge_dir_config,
+      create_ag_config,
+      merge_ag_config,
+      ag_directives,
+      register_hooks
+  };
 

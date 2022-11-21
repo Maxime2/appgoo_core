@@ -1,3 +1,4 @@
+/* -*- mode: c; c-file-style: "apache"; -*- */
 /* appGoo Compiler
  *
 */
