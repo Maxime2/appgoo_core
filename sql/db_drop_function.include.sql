@@ -49,7 +49,7 @@ begin
 
 FOR funcrow IN SELECT p.proargtypes, n.nspname FROM pg_proc p, pg_namespace n
                WHERE p.proname = p_fn_name AND n.oid = p.pronamespace
-	         AND n.nspname in ('public', 'jesla')
+	         AND n.nspname in ('public')
 LOOP
 
     --for some reason array_upper is off by one for the oidvector type, hence the +1
