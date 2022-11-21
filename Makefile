@@ -45,9 +45,8 @@ install-local-appgoo-net: apache2/local.appgoo.conf
 	@sudo service apache2 restart
 	@echo Apache2 server has been restarted
 
-agc: src/agc.c src/template_pgsql_function_begin_sql.h src/template_pgsql_function_end_sql.h sql/db_drop_function.include.sql
+agc: src/agc.c src/template_pgsql_function_begin_sql.h src/template_pgsql_function_end_sql.h
 	@$(CC) $(CFLAGS) -o $@ $<
-	@psql $(PGFLAGS) -f sql/db_drop_function.include.sql
 
 
 mod_ag.la: src/mod_ag.c
@@ -72,13 +71,14 @@ dist-clean: clean
 	@rm -f *.pgsql make.files make.dep
 	@find . -name "*.pgsql" -type f -delete
 
-functions: agc $(CREDF) $(SQLS)
-	@for fname in "$(SQLS)" ; do psql $(PGFLAGS) -f $${fname} ; done
+functions: agc $(CREDF) sql/db_drop_function.include.sql $(SQLS)
+	@psql $(PGFLAGS) -f sql/db_drop_function.include.sql
 	@psql $(PGFLAGS) -f sql/ag_parse_get.include.sql
 	@psql $(PGFLAGS) -f sql/error_register.include.sql
 	@psql $(PGFLAGS) -f sql/db_error_register.include.sql
 	@psql $(PGFLAGS) -f sql/db_urldecode.include.sql
 	@psql $(PGFLAGS) -f sql/db_urlencode.include.sql
+	@for fname in "$(SQLS)" ; do psql $(PGFLAGS) -f $${fname} ; done
 
 appgoo: $(CREDF) functions make.dep $(APPGOOS)
 
